@@ -5,9 +5,13 @@ export default function Home() {
 		<div className='container'>
 			<Head>
 				<title>Home</title>
-				<link rel='icon' href='/favicon.ico' />
+				<link rel='icon' href='/logo.ico' />
 			</Head>
-			<p>Hello</p>
+
+			<div className='bg-white dark:bg-gray-800'>
+				<h1 className='text-gray-900 dark:text-white'>Dark mode is here!</h1>
+				<p className='text-gray-600 dark:text-gray-300'>Lorem ipsum...</p>
+			</div>
 		</div>
 	);
 }

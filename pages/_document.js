@@ -1,4 +1,5 @@
 import Document, { Html, Head, Main, NextScript } from 'next/document';
+import { Navbar } from '../components/Navbar';
 
 class MyDocument extends Document {
 	static async getInitialProps(ctx) {
@@ -10,7 +11,8 @@ class MyDocument extends Document {
 		return (
 			<Html>
 				<Head />
-				<body className='bg-gray-500'>
+				<body className='dark:bg-gray-800'>
+					<Navbar />
 					<Main />
 					<NextScript />
 				</body>
