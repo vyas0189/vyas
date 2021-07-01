@@ -4,16 +4,6 @@ import { useEffect } from 'react';
 
 export default function Home() {
 
-  useEffect(() => {
-    algoliasearchNetlify({
-      appId: '6E8Q2MHQ6Q',
-      apiKey: '69b8dc6bd5f088b94dcaa0c8a1344afd',
-      siteId: 'f823f241-30d8-4e88-a617-19a4606271c7',
-      branch: 'main',
-      selector: 'div#search',
-    });
-  }, []);
-
   return (
     <>
 
