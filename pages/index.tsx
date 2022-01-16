@@ -5,8 +5,6 @@ export default function Home() {
 
   return (
     <>
-
-      < >
         <Head>
           <title>Vyas Ramankulangara</title>
           <meta name="description" content="Home Page" />
