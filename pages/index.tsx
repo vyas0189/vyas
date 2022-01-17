@@ -13,7 +13,6 @@ export default function Home() {
 
         <div>
           <h1>Vyas Ramankulangara</h1>
-          <h1>Nithya</h1>
         </div>
     </>
   );
