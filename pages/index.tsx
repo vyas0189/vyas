@@ -12,7 +12,7 @@ export default function Home() {
         </Head>
 
         <div>
-          <h1>Vyas Ramankulangara</h1>
+          <p className='text-2xl'>Vyas Ramankulangara</p>
         </div>
     </>
   );
