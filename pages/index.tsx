@@ -19,7 +19,7 @@ function Home() {
       <p className='text-3xl'> Vyas Ramankulangara </p>
     </div>
 </>
-  )
+  
 }
 
 export default Home
