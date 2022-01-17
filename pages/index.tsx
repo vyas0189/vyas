@@ -14,11 +14,6 @@ function Home() {
           <a>About Us</a>
         </Link>
       </li>
-      <li>
-        <Link href="/blog/hello-world">
-          <a>Blog Post</a>
-        </Link>
-      </li>
     </ul>
     <div> 
       <p className='text-3xl'> Vyas Ramankulangara </p>
