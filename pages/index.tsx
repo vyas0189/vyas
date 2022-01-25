@@ -1,5 +1,4 @@
-import Head from 'next/head';
-import Link from 'next/link'
+import Link from 'next/link';
 
 function Home() {
   return <>
@@ -15,11 +14,11 @@ function Home() {
         </Link>
       </li>
     </ul>
-    <div> 
+    <div>
       <p className='text-3xl'> Vyas Ramankulangara </p>
     </div>
-</>
-  
+  </>;
+
 }
 
-export default Home
+export default Home;
