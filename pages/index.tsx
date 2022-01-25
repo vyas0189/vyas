@@ -16,7 +16,7 @@ function Home() {
         </li>
       </ul>
       <div>
-        <p className='text-3xl'> Vyas Ramankulangara </p>
+        <p className='text-3xl'> Vyas Ramankulangara</p>
       </div>
     </>
   );
