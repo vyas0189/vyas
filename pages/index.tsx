@@ -5,7 +5,7 @@ function Home() {
   return (
     <>
       <Head>
-        <title>Home</title>
+        <title>Vyas Ramankulangara</title>
         <meta name="description" content="Home" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -17,7 +17,7 @@ function Home() {
         </li>
         <li>
           <Link href='/about'>
-            <a>About Us</a>
+            <a>About Me</a>
           </Link>
         </li>
       </ul>
