@@ -1,6 +1,8 @@
 import 'tailwindcss/tailwind.css';
 import type { AppProps } from 'next/app';
 import '../styles/index.css';
+import { Analytics } from '@vercel/analytics/react';
+;
 import Script from 'next/script';
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -20,6 +22,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         `}
       </Script>
       <Component {...pageProps} />
+      <Analytics />
     </>
   );
 }
