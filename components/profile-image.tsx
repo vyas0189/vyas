@@ -8,7 +8,7 @@ export function ProfileImage() {
     <div className="relative">
       <Avatar className="h-32 w-32 border-4 border-primary shadow-lg">
         <AvatarImage
-          src="/profile.jpg"
+          src="/profile.jpeg"
           alt="Vyas Ramankulangara"
           className="object-cover"
         />
