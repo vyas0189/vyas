@@ -9,6 +9,29 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Vyas Ramankulangara',
   description: 'Software Engineer specializing in full-stack development and cloud technologies',
+  metadataBase: new URL('https://vyasr.space'),
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://vyasr.space',
+    siteName: 'Vyas Ramankulangara',
+    title: 'Vyas Ramankulangara - Software Engineer',
+    description: 'Full Stack Software Engineer specializing in enterprise applications, cloud technologies, and modern web development.',
+    images: [
+      {
+        url: '/profile.jpeg',
+        width: 1200,
+        height: 630,
+        alt: 'Vyas Ramankulangara - Software Engineer',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Vyas Ramankulangara - Software Engineer',
+    description: 'Full Stack Software Engineer specializing in enterprise applications, cloud technologies, and modern web development.',
+    images: ['/profile.jpeg',],
+  },
 };
 
 export default function RootLayout({
