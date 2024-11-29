@@ -17,9 +17,7 @@ import {
 } from "@/components/ui/form";
 import { z } from "zod";
 import { formSchema } from "@/lib/schemas";
-import { send } from "@/lib/email";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
 
 export default function Contact() {
 
@@ -36,7 +34,10 @@ export default function Contact() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await send(values);
+      await fetch("/api/email", {
+        method: "POST",
+        body: JSON.stringify(values),
+      });
       form.reset();
       toast({
         title: "Message sent",

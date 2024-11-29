@@ -1,20 +1,20 @@
-import { ContactEmail } from '@/components/ui/contact-email';
+import ContactEmail from '@/components/ui/contact-email';
 import { Resend } from 'resend';
-import { z } from 'zod';
-import { formSchema } from './schemas';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export const send = async (emailFormData: z.infer<typeof formSchema>) => {
+export async function POST(request: Request) {
+	const { name, email, message } = await request.json();
+
 	try {
 		const { error } = await resend.emails.send({
 			from: `Vyas's Website<${process.env.RESEND_FROM_EMAIL}>`,
 			to: ['vyas0189@gmail.com'],
 			subject: 'Email from Contact Form',
 			react: ContactEmail({
-				name: emailFormData.name,
-				email: emailFormData.email,
-				message: emailFormData.message,
+				name,
+				email,
+				message,
 			}),
 		});
 
@@ -23,9 +23,9 @@ export const send = async (emailFormData: z.infer<typeof formSchema>) => {
 			throw new Error('Failed to send email');
 		}
 
-		return { success: true };
+		return new Response('Email sent successfully', { status: 200 });
 	} catch (e) {
 		console.error('Email sending error:', e);
 		throw new Error('Failed to send email');
 	}
-};
+}
