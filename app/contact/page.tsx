@@ -34,7 +34,7 @@ export default function Contact() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await fetch("/api/email", {
+      await fetch("/api/emails", {
         method: "POST",
         body: JSON.stringify(values),
       });
