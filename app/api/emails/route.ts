@@ -1,5 +1,5 @@
-import React from 'react'; // Important for React.createElement to work
-import ContactEmail from '@/components/ui/contact-email';
+import React from 'react';
+import { ContactEmail } from '@/components/ui/contact-email';
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);

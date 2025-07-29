@@ -5,7 +5,7 @@ import { Code2, Database, GitBranch, Server } from "lucide-react";
 export default function About() {
   const skills = {
     languages: ["Java", "TypeScript", "JavaScript", "Python", "C++", "SQL"],
-    technologies: ["Spring Boot", "React.js", "Node.js", "Express.js", "Next.js", "GraphQL", "REST"],
+    technologies: ["Spring Boot", "React.js", "Node.js", "Express.js", "Next.js", "GraphQL", "REST", "LangChain", "LangGraph", "AutoGen"],
     cloud: ["AWS", "PCF", "Docker", "Jenkins", "GitHub Actions", "Microservices"],
     databases: ["PostgreSQL", "MongoDB", "Redis", "MySQL"]
   };
@@ -14,20 +14,40 @@ export default function About() {
     {
       title: "Software Engineer II",
       company: "JPMorgan Chase & Co.",
-      period: "Jan 2023 - Present",
-      description: "Leading development of enterprise applications using Java Spring Boot and React."
+      location: "Houston, Texas",
+      period: "July 2024 - Present",
+      highlights: [
+        "Developed and implemented a fullstack application integrating Jira and ServiceNow APIs, serving development teams and processing 200+ ticket requests weekly",
+        "Reduced average ticket creation time by 40% and provided a centralized entry point that eliminated the need to navigate multiple platforms",
+        "Integrated Agentic AI capabilities to enable natural language querying of Jira data, empowering leadership teams with real-time insights into workstream progress",
+        "Automated data collection for QBR and MBR reports, reducing manual report preparation time by 60% and providing executive stakeholders with on-demand project visibility",
+        "Collaborated with cross-functional teams to develop an Agentic AI-powered OpenRewrite recipe generator for FARM breaks, reducing recipe development time from 2 sprints to 5 days total, achieving an 80% reduction in development cycle time"
+      ]
     },
     {
       title: "Software Engineer",
       company: "JPMorgan Chase & Co.",
-      period: "Feb 2021 - Jan 2023",
-      description: "Developed and maintained enterprise applications in an Agile environment."
+      location: "Plano, Texas",
+      period: "February 2021 - July 2024",
+      highlights: [
+        "Developed and implemented robust frameworks for automation and application processing activities for Java microservices in the consumer banking sector",
+        "Supported teams with debugging and onboarding Kafka topics, conducting knowledge transfer sessions, assisting with Java 17 upgrades and Spring Boot 3 integration across various services",
+        "Refactored and implemented post-onboarding microservices, processing over 100K events daily for a range of banking products, encompassing consumer banking, investment accounts, and business banking accounts",
+        "Contributed to UI tool development by creating pages to display real-time event status for microservices, visualizing event flow using modern libraries, creating pages for database status management and performance metrics",
+        "Deployed infrastructure utilizing Terraform, executed proof of concept (POC) on Amazon Elastic Kubernetes Service (EKS), facilitated application migration to Amazon ECS Fargate",
+        "Co-led the Professional Development Committee, hosting coding challenges and trivia nights; demonstrated leadership in organizing the SEPs Talk with approximately 50 SEPs attending",
+        "Volunteered at Code for Good as a subject matter expert in React JS, Node.js, and Spring Boot, assisting teams with code issues and mentoring candidates from project ideation to execution"
+      ]
     },
     {
       title: "Software Engineer Intern",
       company: "JPMorgan Chase & Co.",
-      period: "Jun 2020 - Aug 2020",
-      description: "Developed a full-stack application for a non-profit organization."
+      location: "Plano, Texas",
+      period: "June 2020 - August 2020",
+      highlights: [
+        "Developed a web application using React JS and Node.js for a non-profit organization, aiming to provide gamified learning experiences",
+        "Completed various coding assignments using Spring Boot, React, and Kafka, and presented solutions along with thought process"
+      ]
     }
   ];
 
@@ -60,33 +80,22 @@ export default function About() {
               <Card key={index} className="p-6 mb-4">
                 <h3 className="font-semibold">{job.title}</h3>
                 <p className="text-primary">{job.company}</p>
-                <p className="text-sm text-muted-foreground mb-2">{job.period}</p>
-                <p className="text-muted-foreground">{job.description}</p>
-              </Card>
-            ))}
-            
-            <h2 className="text-2xl font-semibold mb-4">Education</h2>
-            {education.map((edu, index) => (
-              <Card key={index} className="p-6 mb-4">
-                <h3 className="font-semibold">{edu.degree}</h3>
-                <p className="text-muted-foreground">{edu.school}</p>
-                <p className="text-sm text-muted-foreground">{edu.period}</p>
-                <p className="text-sm text-muted-foreground">Activities: {edu.activities}</p>
-              </Card>
-            ))}
-
-            <h2 className="text-2xl font-semibold mb-4">Certifications</h2>
-            {certifications.map((cert, index) => (
-              <Card key={index} className="p-6 mb-4">
-                <h3 className="font-semibold">{cert.name}</h3>
-                <p className="text-muted-foreground">{cert.issuer}</p>
-                <p className="text-sm text-muted-foreground">Issued: {cert.issued} · Expires: {cert.expires}</p>
+                <p className="text-sm text-muted-foreground">{job.location}</p>
+                <p className="text-sm text-muted-foreground mb-3">{job.period}</p>
+                <ul className="space-y-2">
+                  {job.highlights.map((highlight, highlightIndex) => (
+                    <li key={highlightIndex} className="text-muted-foreground text-sm flex items-start">
+                      <span className="text-primary mr-2 mt-1">•</span>
+                      <span>{highlight}</span>
+                    </li>
+                  ))}
+                </ul>
               </Card>
             ))}
           </div>
           <div>
             <h2 className="text-2xl font-semibold mb-4">Technical Skills</h2>
-            <div className="grid gap-4">
+            <div className="grid gap-6">
               <Card className="p-6">
                 <div className="flex items-center mb-3">
                   <Code2 className="h-5 w-5 mr-2 text-primary" />
@@ -132,6 +141,25 @@ export default function About() {
                 </div>
               </Card>
             </div>
+            
+            <h2 className="text-2xl font-semibold mb-4 mt-8">Education</h2>
+            {education.map((edu, index) => (
+              <Card key={index} className="p-6 mb-4">
+                <h3 className="font-semibold">{edu.degree}</h3>
+                <p className="text-muted-foreground">{edu.school}</p>
+                <p className="text-sm text-muted-foreground">{edu.period}</p>
+                <p className="text-sm text-muted-foreground">Activities: {edu.activities}</p>
+              </Card>
+            ))}
+
+            <h2 className="text-2xl font-semibold mb-4 mt-8">Certifications</h2>
+            {certifications.map((cert, index) => (
+              <Card key={index} className="p-6 mb-4">
+                <h3 className="font-semibold">{cert.name}</h3>
+                <p className="text-muted-foreground">{cert.issuer}</p>
+                <p className="text-sm text-muted-foreground">Issued: {cert.issued} · Expires: {cert.expires}</p>
+              </Card>
+            ))}
           </div>
         </div>
       </div>
