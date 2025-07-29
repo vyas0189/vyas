@@ -1,3 +1,4 @@
+import React from 'react';
 import { ContactEmail } from '@/components/ui/contact-email';
 import { Resend } from 'resend';
 
