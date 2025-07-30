@@ -29,11 +29,12 @@ node_modules/
 # OS specific
 .DS_Store
 
-# Task files
-# tasks.json
-# tasks/ 
 .claude
 .taskmaster
 scripts
 .mcp.json
 PROMPT.md
+
+# Task files
+# tasks.json
+# tasks/ 
