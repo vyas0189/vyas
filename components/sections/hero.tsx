@@ -14,7 +14,7 @@ export function Hero() {
       <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
         Hi, I'm <span className="text-primary">Vyas Ramankulangara</span>
       </h1>
-      <p className="mt-6 text-xl text-muted-foreground max-w-[42rem]">
+      <p className="mt-6 text-xl text-muted-foreground max-w-2xl">
         Software Engineer II at JPMorgan Chase & Co. | Full Stack Developer | AWS Certified Cloud Practitioner
       </p>
       <div className="mt-8 flex gap-4">
