@@ -1,12 +1,44 @@
 import React from 'react';
 import { ContactEmail } from '@/components/ui/contact-email';
 import { Resend } from 'resend';
+import { NextRequest } from 'next/server';
+import { getClientIP } from '@/lib/ip-detection';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
 	if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL) {
 		return new Response('Environment variables not set', { status: 500 });
+	}
+
+	// Extract client IP for rate limiting
+	const clientIP = getClientIP(request);
+
+	// Check rate limit before processing
+	const rateLimitResult = await checkRateLimit(clientIP);
+
+	if (!rateLimitResult.allowed) {
+		// Rate limit exceeded - return 429 with proper headers
+		const headers = new Headers({
+			'Content-Type': 'application/json',
+			'Retry-After': rateLimitResult.retryAfter.toString(),
+			'X-RateLimit-Limit': '5',
+			'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+			'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
+		});
+
+		return new Response(
+			JSON.stringify({
+				error: 'Too Many Requests',
+				message: `Rate limit exceeded. Try again in ${rateLimitResult.retryAfter} seconds.`,
+				retryAfter: rateLimitResult.retryAfter,
+			}),
+			{
+				status: 429,
+				headers,
+			}
+		);
 	}
 
 	const { name, email, message } = await request.json();
