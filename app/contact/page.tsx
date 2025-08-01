@@ -18,10 +18,12 @@ import {
 import { z } from "zod";
 import { formSchema } from "@/lib/schemas";
 import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from "react";
 
 export default function Contact() {
-
   const { toast } = useToast();
+  const [isRateLimited, setIsRateLimited] = useState(false);
+  const [retryAfter, setRetryAfter] = useState(0);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -32,18 +34,60 @@ export default function Contact() {
     },
   });
 
+  // Countdown timer effect
+  useEffect(() => {
+    if (retryAfter > 0) {
+      const timer = setInterval(() => {
+        setRetryAfter((prev) => {
+          if (prev <= 1) {
+            setIsRateLimited(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [retryAfter]);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await fetch("/api/emails", {
+      const response = await fetch("/api/emails", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(values),
       });
+
+      if (response.status === 429) {
+        // Handle rate limit error
+        const errorData = await response.json();
+        const retryAfterSeconds = errorData.retryAfter || 3600; // fallback to 1 hour
+
+        setIsRateLimited(true);
+        setRetryAfter(retryAfterSeconds);
+
+        toast({
+          title: "Too Many Requests",
+          description: `You've reached the email limit. Please try again in ${Math.ceil(retryAfterSeconds / 60)} minutes.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       form.reset();
       toast({
         title: "Message sent",
         description: "Thank you for your message.",
       });
     } catch (error) {
+      console.error('Submit error:', error);
       toast({
         title: "Error",
         description: "There was a problem sending your message. Please try again.",
@@ -111,8 +155,17 @@ export default function Contact() {
                       )}
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting ? "Sending..." : "Send Message"}
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={form.formState.isSubmitting || isRateLimited}
+                  >
+                    {form.formState.isSubmitting
+                      ? "Sending..."
+                      : isRateLimited
+                        ? `Wait ${Math.floor(retryAfter / 60)}:${(retryAfter % 60).toString().padStart(2, '0')}`
+                        : "Send Message"
+                    }
                   </Button>
                 </form>
               </Form>
