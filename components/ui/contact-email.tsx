@@ -18,8 +18,9 @@ interface ContactEmailProps {
 const sanitizeText = (text: string): string => {
     return text
         .replace(/[<>]/g, '') // Remove angle brackets
-        .replace(/javascript:/gi, '') // Remove javascript: URLs
-        .replace(/on\w+=/gi, '') // Remove event handlers
+        .replace(/(javascript:|data:|vbscript:)/gi, '') // Remove dangerous URL schemes
+        .replace(/on\w+\s*=/gi, '') // Remove event handlers with optional whitespace
+        .replace(/on\w+/gi, '') // Remove any remaining event handler attributes
         .trim();
 };
 
