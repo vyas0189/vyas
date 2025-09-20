@@ -14,14 +14,39 @@ interface ContactEmailProps {
     message: string;
 }
 
-// Sanitize function to prevent XSS
+// Comprehensive sanitization function to prevent XSS
 const sanitizeText = (text: string): string => {
-    return text
-        .replace(/[<>]/g, '') // Remove angle brackets
-        .replace(/(javascript:|data:|vbscript:)/gi, '') // Remove dangerous URL schemes
-        .replace(/on\w+\s*=/gi, '') // Remove event handlers with optional whitespace
-        .replace(/on\w+/gi, '') // Remove any remaining event handler attributes
-        .trim();
+    // Convert to string and handle edge cases
+    const input = String(text || '');
+
+    // Apply multiple passes of sanitization
+    const sanitizers = [
+        // Remove HTML tags completely
+        (str: string) => str.replace(/<[^>]*>/g, ''),
+        // Remove dangerous URL schemes (case insensitive)
+        (str: string) => str.replace(/(javascript|data|vbscript):/gi, ''),
+        // Remove event handler attributes (comprehensive)
+        (str: string) => str.replace(/on\w+\s*=\s*[^>\s]*/gi, ''),
+        // Remove standalone event handler names
+        (str: string) => str.replace(/\bon\w+\b/gi, ''),
+        // Remove script-related keywords
+        (str: string) => str.replace(/\b(script|eval|expression)\b/gi, ''),
+        // Clean up whitespace
+        (str: string) => str.replace(/\s+/g, ' ').trim(),
+    ];
+
+    // Apply all sanitizers in sequence, multiple times for overlapping patterns
+    let sanitized = input;
+    for (let pass = 0; pass < 3; pass++) {
+        const beforePass = sanitized;
+        for (const sanitizer of sanitizers) {
+            sanitized = sanitizer(sanitized);
+        }
+        // If no changes in this pass, we're done
+        if (sanitized === beforePass) break;
+    }
+
+    return sanitized;
 };
 
 export const ContactEmail: React.FC<ContactEmailProps> = ({

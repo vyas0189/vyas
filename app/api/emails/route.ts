@@ -42,7 +42,7 @@ export async function POST(request: Request) {
 		return new Response(
 			JSON.stringify({
 				error: 'Invalid input data',
-				details: validation.error.errors
+				details: validation.error.issues
 			}),
 			{
 				status: 400,
