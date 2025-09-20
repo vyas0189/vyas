@@ -1,15 +1,57 @@
 import React from 'react';
 import { ContactEmail } from '@/components/ui/contact-email';
 import { Resend } from 'resend';
+import { formSchema } from '@/lib/schemas';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
+	// Check Content-Type header
+	const contentType = request.headers.get('content-type');
+	if (!contentType || !contentType.includes('application/json')) {
+		return new Response(
+			JSON.stringify({ error: 'Content-Type must be application/json' }),
+			{
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			}
+		);
+	}
+
 	if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL) {
 		return new Response('Environment variables not set', { status: 500 });
 	}
 
-	const { name, email, message } = await request.json();
+	// Parse and validate JSON input
+	let body;
+	try {
+		body = await request.json();
+	} catch (error) {
+		return new Response(
+			JSON.stringify({ error: 'Invalid JSON format' }),
+			{
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			}
+		);
+	}
+
+	// Validate input against schema
+	const validation = formSchema.safeParse(body);
+	if (!validation.success) {
+		return new Response(
+			JSON.stringify({
+				error: 'Invalid input data',
+				details: validation.error.errors
+			}),
+			{
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			}
+		);
+	}
+
+	const { name, email, message } = validation.data;
 
 	try {
 		const { error } = await resend.emails.send({

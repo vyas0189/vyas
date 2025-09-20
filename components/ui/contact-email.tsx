@@ -14,11 +14,26 @@ interface ContactEmailProps {
     message: string;
 }
 
+// Sanitize function to prevent XSS
+const sanitizeText = (text: string): string => {
+    return text
+        .replace(/[<>]/g, '') // Remove angle brackets
+        .replace(/javascript:/gi, '') // Remove javascript: URLs
+        .replace(/on\w+=/gi, '') // Remove event handlers
+        .trim();
+};
+
 export const ContactEmail: React.FC<ContactEmailProps> = ({
     name,
     email,
     message,
-}) => (
+}) => {
+    // Sanitize all user inputs
+    const sanitizedName = sanitizeText(name);
+    const sanitizedEmail = sanitizeText(email);
+    const sanitizedMessage = sanitizeText(message);
+
+    return (
     <Html>
         <Head />
         <Preview>New contact form submission</Preview>
@@ -26,19 +41,20 @@ export const ContactEmail: React.FC<ContactEmailProps> = ({
             <Container style={container}>
                 <Heading style={h1}>New Contact Form Submission</Heading>
                 <Text style={text}>
-                    <strong>Name:</strong> {name}
+                    <strong>Name:</strong> {sanitizedName}
                 </Text>
                 <Text style={text}>
-                    <strong>Email:</strong> {email}
+                    <strong>Email:</strong> {sanitizedEmail}
                 </Text>
                 <Text style={text}>
                     <strong>Message:</strong>
                 </Text>
-                <Text style={messageStyle}>{message}</Text>
+                <Text style={messageStyle}>{sanitizedMessage}</Text>
             </Container>
         </Body>
     </Html>
-);
+    );
+};
 
 export default ContactEmail;
 
