@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Github, Linkedin, Mail, MapPin } from "lucide-react";
+import { GitHubLogoIcon, LinkedInLogoIcon } from "@radix-ui/react-icons";
+import { Mail, MapPin } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import {
@@ -34,19 +35,29 @@ export default function Contact() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await fetch("/api/emails", {
+      const response = await fetch("/api/emails", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(values),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
+
       form.reset();
       toast({
         title: "Message sent",
         description: "Thank you for your message.",
       });
     } catch (error) {
+      console.error('Contact form error:', error);
       toast({
         title: "Error",
-        description: "There was a problem sending your message. Please try again.",
+        description: error instanceof Error ? error.message : "There was a problem sending your message. Please try again.",
         variant: "destructive",
       });
     }
@@ -137,12 +148,12 @@ export default function Contact() {
               <div className="flex space-x-4">
                 <Button variant="outline" size="icon" asChild>
                   <a href="https://github.com/vyas0189" target="_blank" rel="noopener noreferrer">
-                    <Github className="h-5 w-5" />
+                    <GitHubLogoIcon className="h-5 w-5" />
                   </a>
                 </Button>
                 <Button variant="outline" size="icon" asChild>
                   <a href="https://www.linkedin.com/in/vyas0189/" target="_blank" rel="noopener noreferrer">
-                    <Linkedin className="h-5 w-5" />
+                    <LinkedInLogoIcon className="h-5 w-5" />
                   </a>
                 </Button>
               </div>

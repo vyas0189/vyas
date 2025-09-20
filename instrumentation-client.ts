@@ -27,4 +27,5 @@ Sentry.init({
   debug: false,
 });
 
-export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
+// Router transition capturing - removed in newer Sentry versions
+// export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

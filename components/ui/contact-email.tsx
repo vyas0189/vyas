@@ -14,11 +14,34 @@ interface ContactEmailProps {
     message: string;
 }
 
+// Simple but robust text sanitization - for plain text fields only
+const sanitizeText = (text: string): string => {
+    // Convert to string and handle edge cases
+    const input = String(text || '');
+
+    // For email templates, we only need plain text - strip everything dangerous
+    // This is a whitelist approach: only allow safe characters
+    return input
+        // Keep only letters, numbers, spaces, basic punctuation
+        .replace(/[^\w\s.,!?@\-()]/g, '')
+        // Remove any remaining fragments
+        .replace(/\s+/g, ' ')
+        .trim()
+        // Limit length for safety
+        .slice(0, 1000);
+};
+
 export const ContactEmail: React.FC<ContactEmailProps> = ({
     name,
     email,
     message,
-}) => (
+}) => {
+    // Sanitize all user inputs
+    const sanitizedName = sanitizeText(name);
+    const sanitizedEmail = sanitizeText(email);
+    const sanitizedMessage = sanitizeText(message);
+
+    return (
     <Html>
         <Head />
         <Preview>New contact form submission</Preview>
@@ -26,19 +49,20 @@ export const ContactEmail: React.FC<ContactEmailProps> = ({
             <Container style={container}>
                 <Heading style={h1}>New Contact Form Submission</Heading>
                 <Text style={text}>
-                    <strong>Name:</strong> {name}
+                    <strong>Name:</strong> {sanitizedName}
                 </Text>
                 <Text style={text}>
-                    <strong>Email:</strong> {email}
+                    <strong>Email:</strong> {sanitizedEmail}
                 </Text>
                 <Text style={text}>
                     <strong>Message:</strong>
                 </Text>
-                <Text style={messageStyle}>{message}</Text>
+                <Text style={messageStyle}>{sanitizedMessage}</Text>
             </Container>
         </Body>
     </Html>
-);
+    );
+};
 
 export default ContactEmail;
 
