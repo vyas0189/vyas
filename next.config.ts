@@ -34,8 +34,11 @@ tunnelRoute: "/monitoring",
 
 // Configure sourcemap generation and uploading
 sourcemaps: {
-  disable: true,
+  disable: false,
 },
+
+// Use the new stable afterProductionCompile hook for better source map uploads
+useRunAfterProductionCompileHook: true,
 
 // Automatically tree-shake Sentry logger statements to reduce bundle size
 disableLogger: true,
