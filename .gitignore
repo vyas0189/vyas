@@ -37,3 +37,4 @@ pnpm-debug.log*
 PROMPT.md
 .playwright-mcp
 .env.local
+CLAUDE.md
