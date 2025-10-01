@@ -7,7 +7,11 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "astro": "astro"
+    "astro": "astro",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:e2e": "playwright test",
+    "test": "npm run test:unit && npm run test:integration && npm run test:e2e"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.6",
@@ -36,9 +40,13 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
+    "@playwright/test": "^1.55.1",
     "@types/canvas-confetti": "^1.9.0",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
-    "typescript": "^5.9.2"
+    "@vitest/ui": "^3.2.4",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4",
+    "wait-on": "^9.0.1"
   }
 }
