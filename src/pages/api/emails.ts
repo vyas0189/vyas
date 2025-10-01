@@ -4,7 +4,11 @@ import { ContactEmail } from '@/components/ui/contact-email';
 import { Resend } from 'resend';
 import { formSchema } from '@/lib/schemas';
 
-const resend = new Resend(import.meta.env.RESEND_API_KEY);
+// Use process.env for runtime environment variables in SSR mode
+const RESEND_API_KEY = import.meta.env.RESEND_API_KEY || process.env.RESEND_API_KEY;
+const RESEND_FROM_EMAIL = import.meta.env.RESEND_FROM_EMAIL || process.env.RESEND_FROM_EMAIL;
+
+const resend = new Resend(RESEND_API_KEY);
 
 export const POST: APIRoute = async ({ request }) => {
 	// Check Content-Type header
@@ -19,7 +23,7 @@ export const POST: APIRoute = async ({ request }) => {
 		);
 	}
 
-	if (!import.meta.env.RESEND_API_KEY || !import.meta.env.RESEND_FROM_EMAIL) {
+	if (!RESEND_API_KEY || !RESEND_FROM_EMAIL) {
 		return new Response(
 			JSON.stringify({ error: 'Environment variables not set' }),
 			{
@@ -59,7 +63,7 @@ export const POST: APIRoute = async ({ request }) => {
 
 	try {
 		const { error } = await resend.emails.send({
-			from: `Vyas's Website <${import.meta.env.RESEND_FROM_EMAIL}>`,
+			from: `Vyas's Website <${RESEND_FROM_EMAIL}>`,
 			to: ['vyas0189@gmail.com'],
 			subject: 'Email from Contact Form',
 			react: React.createElement(ContactEmail, { name, email, message }),

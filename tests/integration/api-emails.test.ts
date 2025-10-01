@@ -2,6 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 describe('Email API Integration Tests', () => {
   const baseUrl = 'http://localhost:4321';
+  const headers = {
+    'Content-Type': 'application/json',
+    'Origin': baseUrl,
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -11,6 +15,9 @@ describe('Email API Integration Tests', () => {
     it('should reject requests without Content-Type header', async () => {
       const response = await fetch(`${baseUrl}/api/emails`, {
         method: 'POST',
+        headers: {
+          'Origin': baseUrl,
+        },
         body: JSON.stringify({
           name: 'John Doe',
           email: 'john@example.com',
@@ -28,6 +35,7 @@ describe('Email API Integration Tests', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'text/plain',
+          'Origin': baseUrl,
         },
         body: 'invalid data',
       });
@@ -40,9 +48,7 @@ describe('Email API Integration Tests', () => {
     it('should reject requests with invalid JSON', async () => {
       const response = await fetch(`${baseUrl}/api/emails`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: 'invalid json',
       });
 
@@ -54,9 +60,7 @@ describe('Email API Integration Tests', () => {
     it('should reject requests with invalid data schema', async () => {
       const response = await fetch(`${baseUrl}/api/emails`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           name: 'J', // Too short
           email: 'invalid-email',
@@ -73,9 +77,7 @@ describe('Email API Integration Tests', () => {
     it('should reject requests missing required fields', async () => {
       const response = await fetch(`${baseUrl}/api/emails`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           name: 'John Doe',
           // Missing email and message
@@ -98,9 +100,7 @@ describe('Email API Integration Tests', () => {
       for (const email of invalidEmails) {
         const response = await fetch(`${baseUrl}/api/emails`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers,
           body: JSON.stringify({
             name: 'John Doe',
             email,
@@ -117,9 +117,7 @@ describe('Email API Integration Tests', () => {
     it('should accept valid form data', async () => {
       const response = await fetch(`${baseUrl}/api/emails`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           name: 'John Doe',
           email: 'john@example.com',
@@ -142,9 +140,7 @@ describe('Email API Integration Tests', () => {
       // Test minimum length (2 characters)
       const minResponse = await fetch(`${baseUrl}/api/emails`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           name: 'AB',
           email: 'test@example.com',
@@ -156,9 +152,7 @@ describe('Email API Integration Tests', () => {
       // Test maximum length (50 characters)
       const maxResponse = await fetch(`${baseUrl}/api/emails`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           name: 'A'.repeat(50),
           email: 'test@example.com',
@@ -172,9 +166,7 @@ describe('Email API Integration Tests', () => {
       // Test minimum length (10 characters)
       const minResponse = await fetch(`${baseUrl}/api/emails`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           name: 'John Doe',
           email: 'test@example.com',
@@ -186,9 +178,7 @@ describe('Email API Integration Tests', () => {
       // Test maximum length (1000 characters)
       const maxResponse = await fetch(`${baseUrl}/api/emails`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           name: 'John Doe',
           email: 'test@example.com',
