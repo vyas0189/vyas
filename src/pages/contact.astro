@@ -1,0 +1,15 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import Navigation from '@/components/Navigation.astro';
+import { ContactForm } from '@/components/contact-form';
+---
+
+<Layout
+	title='Contact - Vyas Ramankulangara'
+	description='Get in touch with Vyas Ramankulangara'>
+	<Navigation slot='header' />
+
+	<div class='container mx-auto px-4'>
+		<ContactForm client:load />
+	</div>
+</Layout>

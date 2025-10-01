@@ -1,0 +1,29 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="#1a1a2e" stroke="#0f3460" stroke-width="3"/>
+  
+  <!-- Inner accent circle -->
+  <circle cx="100" cy="100" r="85" fill="none" stroke="#16213e" stroke-width="1" opacity="0.3"/>
+  
+  <!-- V letter -->
+  <path d="M 45 60 L 75 130 L 105 60" 
+        fill="none" 
+        stroke="#e94560" 
+        stroke-width="8" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"/>
+  
+  <!-- R letter -->
+  <g transform="translate(95, 0)">
+    <path d="M 30 140 L 30 90 Q 30 75 45 75 L 60 75 Q 70 75 70 85 Q 70 95 60 95 L 45 95 L 70 125" 
+          fill="none" 
+          stroke="#00d9ff" 
+          stroke-width="8" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"/>
+  </g>
+  
+  <!-- Decorative dots -->
+  <circle cx="100" cy="155" r="3" fill="#e94560"/>
+  <circle cx="110" cy="155" r="3" fill="#00d9ff"/>
+</svg>

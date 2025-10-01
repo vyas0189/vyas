@@ -1,0 +1,205 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import Navigation from '@/components/Navigation.astro';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Code2, Database, GitBranch, Server } from 'lucide-react';
+
+const skills = {
+	languages: ['Java', 'TypeScript', 'JavaScript', 'Python', 'C++', 'SQL'],
+	technologies: [
+		'Spring Boot',
+		'React.js',
+		'Node.js',
+		'Express.js',
+		'Next.js',
+		'GraphQL',
+		'REST',
+		'LangChain',
+		'LangGraph',
+		'AutoGen',
+	],
+	cloud: ['AWS', 'PCF', 'Docker', 'Jenkins', 'GitHub Actions', 'Microservices'],
+	databases: ['PostgreSQL', 'MongoDB', 'Redis', 'MySQL'],
+};
+
+const experience = [
+	{
+		title: 'Software Engineer II',
+		company: 'JPMorgan Chase & Co.',
+		location: 'Houston, Texas',
+		period: 'July 2024 - Present',
+		highlights: [
+			'Developed and implemented a fullstack application integrating Jira and ServiceNow APIs, serving development teams and processing 200+ ticket requests weekly',
+			'Reduced average ticket creation time by 40% and provided a centralized entry point that eliminated the need to navigate multiple platforms',
+			'Integrated Agentic AI capabilities to enable natural language querying of Jira data, empowering leadership teams with real-time insights into workstream progress',
+			'Automated data collection for QBR and MBR reports, reducing manual report preparation time by 60% and providing executive stakeholders with on-demand project visibility',
+			'Collaborated with cross-functional teams to develop an Agentic AI-powered OpenRewrite recipe generator for FARM breaks, reducing recipe development time from 2 sprints to 5 days total, achieving an 80% reduction in development cycle time',
+		],
+	},
+	{
+		title: 'Software Engineer',
+		company: 'JPMorgan Chase & Co.',
+		location: 'Plano, Texas',
+		period: 'February 2021 - July 2024',
+		highlights: [
+			'Developed and implemented robust frameworks for automation and application processing activities for Java microservices in the consumer banking sector',
+			'Supported teams with debugging and onboarding Kafka topics, conducting knowledge transfer sessions, assisting with Java 17 upgrades and Spring Boot 3 integration across various services',
+			'Refactored and implemented post-onboarding microservices, processing over 100K events daily for a range of banking products, encompassing consumer banking, investment accounts, and business banking accounts',
+			'Contributed to UI tool development by creating pages to display real-time event status for microservices, visualizing event flow using modern libraries, creating pages for database status management and performance metrics',
+			'Deployed infrastructure utilizing Terraform, executed proof of concept (POC) on Amazon Elastic Kubernetes Service (EKS), facilitated application migration to Amazon ECS Fargate',
+			'Co-led the Professional Development Committee, hosting coding challenges and trivia nights; demonstrated leadership in organizing the SEPs Talk with approximately 50 SEPs attending',
+			'Volunteered at Code for Good as a subject matter expert in React JS, Node.js, and Spring Boot, assisting teams with code issues and mentoring candidates from project ideation to execution',
+		],
+	},
+	{
+		title: 'Software Engineer Intern',
+		company: 'JPMorgan Chase & Co.',
+		location: 'Plano, Texas',
+		period: 'June 2020 - August 2020',
+		highlights: [
+			'Developed a web application using React JS and Node.js for a non-profit organization, aiming to provide gamified learning experiences',
+			'Completed various coding assignments using Spring Boot, React, and Kafka, and presented solutions along with thought process',
+		],
+	},
+];
+
+const education = [
+	{
+		degree: 'Bachelor of Science in Computer Science',
+		school: 'University of Houston',
+		period: '2017 - 2020',
+		activities: 'IEEE, CougarCS',
+	},
+];
+
+const certifications = [
+	{
+		name: 'AWS Certified Cloud Practitioner',
+		issuer: 'Amazon Web Services (AWS)',
+		issued: 'Nov 2022',
+		expires: 'Nov 2025',
+	},
+];
+---
+
+<Layout
+	title='About - Vyas Ramankulangara'
+	description='Professional experience, skills, and background of Vyas Ramankulangara'>
+	<Navigation slot='header' />
+
+	<div class='container mx-auto px-4 py-16'>
+		<div class='flex flex-col items-center'>
+			<div class='w-full'>
+				<h1 class='text-4xl font-bold mb-8 text-center'>About Me</h1>
+				<div class='grid gap-8 md:grid-cols-2'>
+					<div>
+						<h2 class='text-2xl font-semibold mb-4'>Professional Experience</h2>
+						{
+							experience.map((job) => (
+								<Card className='p-6 mb-4'>
+									<h3 class='font-semibold'>{job.title}</h3>
+									<p class='text-primary'>{job.company}</p>
+									<p class='text-sm text-muted-foreground'>{job.location}</p>
+									<p class='text-sm text-muted-foreground mb-3'>{job.period}</p>
+									<ul class='space-y-2'>
+										{job.highlights.map((highlight) => (
+											<li class='text-muted-foreground text-sm flex items-start'>
+												<span class='text-primary mr-2 mt-1'>•</span>
+												<span>{highlight}</span>
+											</li>
+										))}
+									</ul>
+								</Card>
+							))
+						}
+					</div>
+					<div>
+						<h2 class='text-2xl font-semibold mb-4'>Technical Skills</h2>
+						<div class='grid gap-6'>
+							<Card className='p-6'>
+								<div class='flex items-center mb-3'>
+									<Code2 className='h-5 w-5 mr-2 text-primary' />
+									<h3 class='font-semibold'>Programming Languages</h3>
+								</div>
+								<div class='flex flex-wrap gap-2'>
+									{
+										skills.languages.map((skill) => (
+											<Badge variant='secondary'>{skill}</Badge>
+										))
+									}
+								</div>
+							</Card>
+							<Card className='p-6'>
+								<div class='flex items-center mb-3'>
+									<Server className='h-5 w-5 mr-2 text-primary' />
+									<h3 class='font-semibold'>Technologies & Frameworks</h3>
+								</div>
+								<div class='flex flex-wrap gap-2'>
+									{
+										skills.technologies.map((skill) => (
+											<Badge variant='secondary'>{skill}</Badge>
+										))
+									}
+								</div>
+							</Card>
+							<Card className='p-6'>
+								<div class='flex items-center mb-3'>
+									<GitBranch className='h-5 w-5 mr-2 text-primary' />
+									<h3 class='font-semibold'>Cloud & DevOps</h3>
+								</div>
+								<div class='flex flex-wrap gap-2'>
+									{
+										skills.cloud.map((skill) => (
+											<Badge variant='secondary'>{skill}</Badge>
+										))
+									}
+								</div>
+							</Card>
+							<Card className='p-6'>
+								<div class='flex items-center mb-3'>
+									<Database className='h-5 w-5 mr-2 text-primary' />
+									<h3 class='font-semibold'>Databases</h3>
+								</div>
+								<div class='flex flex-wrap gap-2'>
+									{
+										skills.databases.map((skill) => (
+											<Badge variant='secondary'>{skill}</Badge>
+										))
+									}
+								</div>
+							</Card>
+						</div>
+
+						<h2 class='text-2xl font-semibold mb-4 mt-8'>Education</h2>
+						{
+							education.map((edu) => (
+								<Card className='p-6 mb-4'>
+									<h3 class='font-semibold'>{edu.degree}</h3>
+									<p class='text-muted-foreground'>{edu.school}</p>
+									<p class='text-sm text-muted-foreground'>{edu.period}</p>
+									<p class='text-sm text-muted-foreground'>
+										Activities: {edu.activities}
+									</p>
+								</Card>
+							))
+						}
+
+						<h2 class='text-2xl font-semibold mb-4 mt-8'>Certifications</h2>
+						{
+							certifications.map((cert) => (
+								<Card className='p-6 mb-4'>
+									<h3 class='font-semibold'>{cert.name}</h3>
+									<p class='text-muted-foreground'>{cert.issuer}</p>
+									<p class='text-sm text-muted-foreground'>
+										Issued: {cert.issued} · Expires: {cert.expires}
+									</p>
+								</Card>
+							))
+						}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</Layout>

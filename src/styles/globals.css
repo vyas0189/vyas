@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #ffffff;
+  --color-foreground: #09090b;
+  --color-card: #ffffff;
+  --color-card-foreground: #09090b;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #09090b;
+  --color-primary: #18181b;
+  --color-primary-foreground: #fafafa;
+  --color-secondary: #f4f4f5;
+  --color-secondary-foreground: #18181b;
+  --color-muted: #f4f4f5;
+  --color-muted-foreground: #71717a;
+  --color-accent: #f4f4f5;
+  --color-accent-foreground: #18181b;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #fafafa;
+  --color-border: #e4e4e7;
+  --color-input: #e4e4e7;
+  --color-ring: #18181b;
+  --radius: 0.75rem;
+}
+
+@layer base {
+  .dark {
+    --color-background: #131520;
+    --color-foreground: #fafafa;
+    --color-card: #171823;
+    --color-card-foreground: #fafafa;
+    --color-popover: #171823;
+    --color-popover-foreground: #fafafa;
+    --color-primary: #fafafa;
+    --color-primary-foreground: #18181b;
+    --color-secondary: #1f2130;
+    --color-secondary-foreground: #fafafa;
+    --color-muted: #1f2130;
+    --color-muted-foreground: #a1a1aa;
+    --color-accent: #1f2130;
+    --color-accent-foreground: #fafafa;
+    --color-destructive: #7f1d1d;
+    --color-destructive-foreground: #fafafa;
+    --color-border: #1f2130;
+    --color-input: #1f2130;
+    --color-ring: #d4d4d8;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', 'Inter Fallback', sans-serif;
+  }
+}
+
+.dark body {
+  background: linear-gradient(to bottom right, hsl(230 25% 10%), hsl(230 25% 5%));
+  min-height: 100vh;
+}
+
+.dark .bg-card {
+  background: linear-gradient(to bottom right, hsl(230 25% 12%), hsl(230 25% 10%));
+  border: 1px solid hsl(230 25% 15%);
+}
+
