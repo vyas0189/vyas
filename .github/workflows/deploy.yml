@@ -35,8 +35,10 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dist
-          path: dist/
+          name: build-output
+          path: |
+            dist/
+            .netlify/
           retention-days: 1
 
   deploy:
@@ -53,8 +55,8 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v5
         with:
-          name: dist
-          path: dist/
+          name: build-output
+          path: .
 
       - name: Deploy to Netlify
         id: netlify-deploy
