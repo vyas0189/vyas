@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.6",
-    "@astrojs/node": "^9.4.4",
+    "@astrojs/netlify": "^6.5.11",
     "@astrojs/react": "^4.4.0",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-avatar": "^1.1.10",

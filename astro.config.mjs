@@ -3,14 +3,14 @@
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
-import node from '@astrojs/node';
+import netlify from '@astrojs/netlify';
 import sentry from '@sentry/astro';
 
 // https://astro.build/config
 export default defineConfig({
   output: 'server', // Enable SSR for API routes
-  adapter: node({
-    mode: 'standalone'
+  adapter: netlify({
+    edgeMiddleware: false
   }),
   vite: {
     // @ts-ignore - Tailwind Vite plugin type compatibility

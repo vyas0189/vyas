@@ -43,3 +43,5 @@ coverage/
 PROMPT.md
 .playwright-mcp
 CLAUDE.md
+# Local Netlify folder
+.netlify
