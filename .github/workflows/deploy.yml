@@ -102,6 +102,7 @@ jobs:
 
   e2e-tests:
     name: E2E Tests
+    if: github.event_name == 'pull_request'
     needs: deploy
     runs-on: ubuntu-latest
     steps:
