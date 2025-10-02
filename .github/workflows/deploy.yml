@@ -7,11 +7,11 @@ on:
     branches: [main]
 
 env:
-  NODE_VERSION: '22'
+  NODE_VERSION: "22"
 
 jobs:
-  test:
-    name: Run Tests
+  build-and-deploy:
+    name: Build and Deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -32,109 +32,71 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-output
-          path: |
-            dist/
-            .netlify/
-          retention-days: 1
-
-  deploy:
-    name: Deploy to Netlify
-    runs-on: ubuntu-latest
-    needs: test
-    outputs:
-      deploy_url: ${{ steps.netlify-deploy.outputs.NETLIFY_URL }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-output
-          path: .
-
-      - name: Verify build artifacts
-        run: |
-          echo "Checking directory structure:"
-          ls -la
-          echo "Checking dist:"
-          ls -la dist/ || echo "No dist directory"
-          echo "Checking .netlify:"
-          ls -la .netlify/ || echo "No .netlify directory"
-
       - name: Install Netlify CLI
         run: npm install -g netlify-cli
-
-      - name: Create temporary netlify.toml for deployment
-        run: |
-          cat > netlify.toml.deploy << 'EOF'
-          [build]
-            publish = "dist"
-            functions = ".netlify/functions"
-
-          [build.environment]
-            SECRETS_SCAN_OMIT_KEYS = "SENTRY_DSN"
-          EOF
-          mv netlify.toml netlify.toml.backup
-          mv netlify.toml.deploy netlify.toml
 
       - name: Deploy to Netlify
         id: netlify-deploy
         run: |
-          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            DEPLOY_OUTPUT=$(netlify deploy --prod --dir=dist --functions=.netlify/functions --auth=${{ secrets.NETLIFY_AUTH_TOKEN }} --site=${{ secrets.NETLIFY_SITE_ID }} --message="Deploy from GitHub Actions")
-          else
-            DEPLOY_OUTPUT=$(netlify deploy --dir=dist --functions=.netlify/functions --auth=${{ secrets.NETLIFY_AUTH_TOKEN }} --site=${{ secrets.NETLIFY_SITE_ID }} --message="Preview deploy from GitHub Actions")
-          fi
+          BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
+          prod_flag=""
+          if [ "$BRANCH_NAME" = "main" ]; then prod_flag="--prod"; fi
 
-          echo "$DEPLOY_OUTPUT"
+          netlify deploy \
+            --dir dist \
+            --site ${{ secrets.NETLIFY_SITE_ID }} \
+            --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} \
+            $prod_flag \
+            --json \
+            > deploy_output.json
 
-          # Extract URL from output
-          DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | grep -o 'https://[^[:space:]]*' | grep 'netlify.app' | head -1)
-          echo "NETLIFY_URL=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          cat deploy_output.json
+
+          # Extract deploy URL
+          DEPLOY_URL=$(cat deploy_output.json | jq -r '.deploy_url // .url')
+          echo "deploy_url=$DEPLOY_URL" >> $GITHUB_OUTPUT
           echo "Deployed to: $DEPLOY_URL"
 
-          # Restore original netlify.toml
-          mv netlify.toml.backup netlify.toml
-        timeout-minutes: 5
-
-  e2e-test:
-    name: Run E2E Tests
-    runs-on: ubuntu-latest
-    needs: deploy
-    if: github.event_name == 'pull_request'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
       - name: Install Playwright browsers
+        if: github.event_name == 'pull_request'
         run: npx playwright install chromium --with-deps
 
-      - name: Wait for deployment
+      - name: Wait for deployment to be ready
+        if: github.event_name == 'pull_request'
         run: sleep 30
 
-      - name: Run E2E tests against Netlify preview
+      - name: Run E2E tests against preview
+        if: github.event_name == 'pull_request'
         run: npm run test:e2e
         env:
-          PLAYWRIGHT_TEST_BASE_URL: ${{ needs.deploy.outputs.deploy_url }}
+          PLAYWRIGHT_TEST_BASE_URL: ${{ steps.netlify-deploy.outputs.deploy_url }}
 
       - name: Upload Playwright report
+        if: github.event_name == 'pull_request' && always()
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+      - name: Comment PR with preview URL and test results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deployUrl = '${{ steps.netlify-deploy.outputs.deploy_url }}';
+            const testStatus = '${{ job.status }}' === 'success' ? '✅ Passed' : '❌ Failed';
+            const comment = `### 🚀 Preview Deployment Ready!
+
+            **Preview URL:** ${deployUrl}
+
+            **E2E Test Results:** ${testStatus}
+
+            The preview deployment is ready for testing.`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
