@@ -64,16 +64,17 @@ jobs:
         id: netlify-deploy
         run: |
           if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            netlify deploy --prod --dir=. --build=false --auth=${{ secrets.NETLIFY_AUTH_TOKEN }} --site=${{ secrets.NETLIFY_SITE_ID }} --message="Deploy from GitHub Actions" > deploy-output.txt
+            DEPLOY_OUTPUT=$(netlify deploy --prod --dir=dist --functions=.netlify/functions --auth=${{ secrets.NETLIFY_AUTH_TOKEN }} --site=${{ secrets.NETLIFY_SITE_ID }} --message="Deploy from GitHub Actions")
           else
-            netlify deploy --dir=. --build=false --auth=${{ secrets.NETLIFY_AUTH_TOKEN }} --site=${{ secrets.NETLIFY_SITE_ID }} --message="Preview deploy from GitHub Actions" > deploy-output.txt
+            DEPLOY_OUTPUT=$(netlify deploy --dir=dist --functions=.netlify/functions --auth=${{ secrets.NETLIFY_AUTH_TOKEN }} --site=${{ secrets.NETLIFY_SITE_ID }} --message="Preview deploy from GitHub Actions")
           fi
 
+          echo "$DEPLOY_OUTPUT"
+
           # Extract URL from output
-          DEPLOY_URL=$(grep -o 'https://[^[:space:]]*' deploy-output.txt | head -1)
+          DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | grep -o 'https://[^[:space:]]*' | grep 'netlify.app' | head -1)
           echo "NETLIFY_URL=$DEPLOY_URL" >> $GITHUB_OUTPUT
           echo "Deployed to: $DEPLOY_URL"
-          cat deploy-output.txt
         timeout-minutes: 5
 
   e2e-test:
