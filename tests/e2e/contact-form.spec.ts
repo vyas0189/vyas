@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Contact Form', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/contact');
+    await page.goto('/contact', { waitUntil: 'networkidle' });
+    // Wait a bit for React hydration
+    await page.waitForTimeout(500);
   });
 
   test('should display contact form', async ({ page }) => {
@@ -27,12 +29,9 @@ test.describe('Contact Form', () => {
     const submitButton = page.getByRole('button', { name: /send message/i });
     await submitButton.click();
 
-    // Should show validation errors - wait a bit for React Hook Form to show errors
-    await page.waitForTimeout(500);
-
-    // Check if any validation message appears
-    const errorMessages = page.locator('text=/String must contain at least|Required/i');
-    await expect(errorMessages.first()).toBeVisible({ timeout: 3000 });
+    // Should show validation errors
+    await expect(page.getByText(/string must contain at least/i).first()).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/invalid email/i)).toBeVisible();
   });
 
   test('should validate name field', async ({ page }) => {
@@ -42,7 +41,7 @@ test.describe('Contact Form', () => {
     // Test too short name
     await nameInput.fill('A');
     await submitButton.click();
-    await expect(page.getByText(/string must contain at least/i).first()).toBeVisible();
+    await expect(page.getByText(/string must contain at least/i).first()).toBeVisible({ timeout: 5000 });
 
     // Test valid name
     await nameInput.fill('John Doe');
@@ -71,7 +70,7 @@ test.describe('Contact Form', () => {
     // Test too short message
     await messageInput.fill('Short');
     await submitButton.click();
-    await expect(page.getByText(/string must contain at least/i).first()).toBeVisible();
+    await expect(page.getByText(/string must contain at least/i).first()).toBeVisible({ timeout: 5000 });
 
     // Test valid message
     await messageInput.fill('This is a valid message with enough characters to pass validation.');
