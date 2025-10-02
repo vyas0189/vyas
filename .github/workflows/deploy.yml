@@ -57,6 +57,15 @@ jobs:
           name: build-output
           path: .
 
+      - name: Verify build artifacts
+        run: |
+          echo "Checking directory structure:"
+          ls -la
+          echo "Checking dist:"
+          ls -la dist/ || echo "No dist directory"
+          echo "Checking .netlify:"
+          ls -la .netlify/ || echo "No .netlify directory"
+
       - name: Install Netlify CLI
         run: npm install -g netlify-cli
 
