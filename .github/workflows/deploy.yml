@@ -64,9 +64,9 @@ jobs:
         id: netlify-deploy
         run: |
           if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            netlify deploy --prod --dir=. --auth=${{ secrets.NETLIFY_AUTH_TOKEN }} --site=${{ secrets.NETLIFY_SITE_ID }} --message="Deploy from GitHub Actions" > deploy-output.txt
+            netlify deploy --prod --dir=. --build=false --auth=${{ secrets.NETLIFY_AUTH_TOKEN }} --site=${{ secrets.NETLIFY_SITE_ID }} --message="Deploy from GitHub Actions" > deploy-output.txt
           else
-            netlify deploy --dir=. --auth=${{ secrets.NETLIFY_AUTH_TOKEN }} --site=${{ secrets.NETLIFY_SITE_ID }} --message="Preview deploy from GitHub Actions" > deploy-output.txt
+            netlify deploy --dir=. --build=false --auth=${{ secrets.NETLIFY_AUTH_TOKEN }} --site=${{ secrets.NETLIFY_SITE_ID }} --message="Preview deploy from GitHub Actions" > deploy-output.txt
           fi
 
           # Extract URL from output
