@@ -39,8 +39,10 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dist
-          path: dist/
+          name: netlify-build
+          path: |
+            .netlify/
+            dist/
           retention-days: 1
 
   deploy:
@@ -53,11 +55,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: dist
-          path: dist/
+          name: netlify-build
+
+      - name: Verify build artifacts
+        run: |
+          echo "Contents of .netlify folder:"
+          ls -la .netlify/ || echo "No .netlify folder"
+          echo "Contents of dist folder:"
+          ls -la dist/ || echo "No dist folder"
 
       - name: Install Netlify CLI
         run: npm install -g netlify-cli
@@ -70,11 +87,9 @@ jobs:
           if [ "$BRANCH_NAME" = "main" ]; then prod_flag="--prod"; fi
 
           netlify deploy \
-            --dir dist \
             --site ${{ secrets.NETLIFY_SITE_ID }} \
             --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} \
             $prod_flag \
-            --no-build \
             --json \
             > deploy_output.json
 
