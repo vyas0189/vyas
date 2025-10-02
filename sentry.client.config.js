@@ -12,7 +12,12 @@ Sentry.init({
       maskAllText: true,
       blockAllMedia: true,
     }),
+    // send console.log, console.warn, and console.error calls as logs to Sentry
+    Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
   ],
+
+  // Enable logs to be sent to Sentry
+  enableLogs: true,
 
   // Set tracesSampleRate to 1.0 to capture 100%
   // of transactions for performance monitoring.

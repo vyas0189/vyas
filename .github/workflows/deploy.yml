@@ -14,8 +14,8 @@ env:
   NODE_VERSION: "22"
 
 jobs:
-  build-and-deploy:
-    name: Build and Deploy
+  build-and-test:
+    name: Build and Unit Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -36,6 +36,46 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: netlify-build
+          path: |
+            .netlify/
+            dist/
+          retention-days: 1
+
+  deploy:
+    name: Deploy to Netlify
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    outputs:
+      deploy_url: ${{ steps.netlify-deploy.outputs.deploy_url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: netlify-build
+
+      - name: Verify build artifacts
+        run: |
+          echo "Contents of .netlify folder:"
+          ls -la .netlify/ || echo "No .netlify folder"
+          echo "Contents of dist folder:"
+          ls -la dist/ || echo "No dist folder"
+
       - name: Install Netlify CLI
         run: npm install -g netlify-cli
 
@@ -47,7 +87,6 @@ jobs:
           if [ "$BRANCH_NAME" = "main" ]; then prod_flag="--prod"; fi
 
           netlify deploy \
-            --dir dist \
             --site ${{ secrets.NETLIFY_SITE_ID }} \
             --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} \
             $prod_flag \
@@ -61,42 +100,64 @@ jobs:
           echo "deploy_url=$DEPLOY_URL" >> $GITHUB_OUTPUT
           echo "Deployed to: $DEPLOY_URL"
 
+  e2e-tests:
+    name: E2E Tests
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Install Playwright browsers
-        if: github.event_name == 'pull_request'
         run: npx playwright install chromium --with-deps
 
       - name: Wait for deployment to be ready
-        if: github.event_name == 'pull_request'
         run: sleep 30
 
-      - name: Run E2E tests against preview
-        if: github.event_name == 'pull_request'
+      - name: Run E2E tests
         run: npm run test:e2e
         env:
-          PLAYWRIGHT_TEST_BASE_URL: ${{ steps.netlify-deploy.outputs.deploy_url }}
+          PLAYWRIGHT_TEST_BASE_URL: ${{ needs.deploy.outputs.deploy_url }}
 
       - name: Upload Playwright report
-        if: github.event_name == 'pull_request' && always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
 
-      - name: Comment PR with preview URL and test results
-        if: github.event_name == 'pull_request' && always()
+  comment-pr:
+    name: Comment on PR
+    if: github.event_name == 'pull_request' && always()
+    needs: [deploy, e2e-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment PR with results
         uses: actions/github-script@v8
         with:
           script: |
-            const deployUrl = '${{ steps.netlify-deploy.outputs.deploy_url }}';
-            const testStatus = '${{ job.status }}' === 'success' ? '✅ Passed' : '❌ Failed';
-            const comment = `### 🚀 Preview Deployment Ready!
+            const deployUrl = '${{ needs.deploy.outputs.deploy_url }}';
+            const e2eStatus = '${{ needs.e2e-tests.result }}';
+            const testStatus = e2eStatus === 'success' ? '✅ Passed' : '❌ Failed';
+            const overallStatus = e2eStatus === 'success' ? '✅ All checks passed!' : '❌ E2E tests failed - deployment blocked';
+
+            const comment = `### 🚀 Preview Deployment
 
             **Preview URL:** ${deployUrl}
 
             **E2E Test Results:** ${testStatus}
 
-            The preview deployment is ready for testing.`;
+            **Status:** ${overallStatus}`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
