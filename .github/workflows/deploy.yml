@@ -69,6 +69,19 @@ jobs:
       - name: Install Netlify CLI
         run: npm install -g netlify-cli
 
+      - name: Create temporary netlify.toml for deployment
+        run: |
+          cat > netlify.toml.deploy << 'EOF'
+          [build]
+            publish = "dist"
+            functions = ".netlify/functions"
+
+          [build.environment]
+            SECRETS_SCAN_OMIT_KEYS = "SENTRY_DSN"
+          EOF
+          mv netlify.toml netlify.toml.backup
+          mv netlify.toml.deploy netlify.toml
+
       - name: Deploy to Netlify
         id: netlify-deploy
         run: |
@@ -84,6 +97,9 @@ jobs:
           DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | grep -o 'https://[^[:space:]]*' | grep 'netlify.app' | head -1)
           echo "NETLIFY_URL=$DEPLOY_URL" >> $GITHUB_OUTPUT
           echo "Deployed to: $DEPLOY_URL"
+
+          # Restore original netlify.toml
+          mv netlify.toml.backup netlify.toml
         timeout-minutes: 5
 
   e2e-test:
