@@ -1,6 +1,8 @@
 [build]
-  command = "npm run build"
+  # Build happens in GitHub Actions, skip build in Netlify
+  command = "echo 'Build already completed in CI'"
   publish = "dist"
+  functions = ".netlify/functions"
 
 # Sentry DSN is a public value, not a secret
 # It's safe to expose in client-side code
