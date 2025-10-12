@@ -128,6 +128,7 @@ jobs:
         run: npm run test:e2e
         env:
           PLAYWRIGHT_TEST_BASE_URL: ${{ needs.deploy.outputs.deploy_url }}
+          RESEND_TO_EMAIL: ${{ secrets.RESEND_TO_EMAIL }}
 
       - name: Upload Playwright report
         if: always()
