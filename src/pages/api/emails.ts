@@ -7,6 +7,7 @@ import { formSchema } from '@/lib/schemas';
 // Use process.env for runtime environment variables in SSR mode
 const RESEND_API_KEY = import.meta.env.RESEND_API_KEY || process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = import.meta.env.RESEND_FROM_EMAIL || process.env.RESEND_FROM_EMAIL;
+const RESEND_TO_EMAIL = import.meta.env.RESEND_TO_EMAIL || process.env.RESEND_TO_EMAIL || 'vyas0189@gmail.com';
 
 const resend = new Resend(RESEND_API_KEY);
 
@@ -64,7 +65,7 @@ export const POST: APIRoute = async ({ request }) => {
 	try {
 		const { error } = await resend.emails.send({
 			from: `Vyas's Website <${RESEND_FROM_EMAIL}>`,
-			to: ['vyas0189@gmail.com'],
+			to: [RESEND_TO_EMAIL],
 			subject: 'Email from Contact Form',
 			react: React.createElement(ContactEmail, { name, email, message }),
 		});

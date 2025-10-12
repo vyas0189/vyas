@@ -14,6 +14,10 @@ export default defineConfig({
 		screenshot: 'only-on-failure',
 		navigationTimeout: 15000,
 	},
+	// Set test email for e2e tests
+	env: {
+		RESEND_TO_EMAIL: 'delivered@resend.dev',
+	},
 	projects: process.env.CI
 		? [
 				{
