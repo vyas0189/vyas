@@ -3,8 +3,8 @@ import * as Sentry from "@sentry/astro";
 Sentry.init({
   dsn: "https://e45e12cd45f5de19cd27f3c1320249c3@o4507371130585088.ingest.us.sentry.io/4508447134121984",
 
-  // Adds request headers and IP for users
-  sendDefaultPii: true,
+  // Disabled: avoid collecting user IP addresses and cookies
+  sendDefaultPii: false,
 
   integrations: [
     Sentry.browserTracingIntegration(),
