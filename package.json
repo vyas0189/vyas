@@ -13,9 +13,9 @@
     "test": "npm run test:unit && npm run test:e2e"
   },
   "dependencies": {
-    "@astrojs/mdx": "^4.3.6",
-    "@astrojs/netlify": "^6.5.11",
-    "@astrojs/react": "^4.4.0",
+    "@astrojs/mdx": "^5.0.0",
+    "@astrojs/netlify": "^7.0.0",
+    "@astrojs/react": "^5.0.0",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-label": "^2.1.7",
