@@ -1,11 +1,12 @@
 ---
-import Layout from '@/layouts/Layout.astro';
+import Footer from '@/components/Footer.astro';
 import Navigation from '@/components/Navigation.astro';
+import Layout from '@/layouts/Layout.astro';
 ---
 
 <Layout title="404 — Page Not Found" description="The page you're looking for doesn't exist.">
   <Navigation slot="header" />
-  <section class="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center text-center px-4">
+  <section class="flex flex-1 flex-col items-center justify-center text-center px-4 py-16">
     <p class="text-sm uppercase tracking-widest text-muted-foreground">Error 404</p>
     <h1 class="mt-2 text-5xl font-bold sm:text-6xl">Page not found</h1>
     <p class="mt-4 max-w-md text-muted-foreground">
@@ -25,8 +26,7 @@ import Navigation from '@/components/Navigation.astro';
         Contact me
       </a>
     </div>
-    <p class="mt-6 text-xs text-muted-foreground">
-      Or read the <a href="/privacy" class="underline hover:text-foreground">privacy policy</a>.
-    </p>
   </section>
+
+  <Footer slot="footer" />
 </Layout>

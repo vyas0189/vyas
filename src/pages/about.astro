@@ -1,8 +1,9 @@
 ---
-import Layout from '@/layouts/Layout.astro';
+import Footer from '@/components/Footer.astro';
 import Navigation from '@/components/Navigation.astro';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import Layout from '@/layouts/Layout.astro';
 import { Code2, Database, GitBranch, Server } from 'lucide-react';
 
 const skills = {
@@ -201,4 +202,6 @@ const certifications = [
 			</div>
 		</div>
 	</div>
+
+	<Footer slot='footer' />
 </Layout>
