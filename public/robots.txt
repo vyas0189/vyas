@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-Sitemap: https://vyasr.com/sitemap-index.xml
+Sitemap: https://vyasr.space/sitemap-index.xml
