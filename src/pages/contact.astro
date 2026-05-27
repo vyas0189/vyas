@@ -1,8 +1,9 @@
 ---
-import Layout from '@/layouts/Layout.astro';
+import Footer from '@/components/Footer.astro';
 import Navigation from '@/components/Navigation.astro';
 import { ContactForm } from '@/components/contact-form';
 import { Toaster } from '@/components/ui/sonner';
+import Layout from '@/layouts/Layout.astro';
 ---
 
 <Layout
@@ -14,4 +15,6 @@ import { Toaster } from '@/components/ui/sonner';
 		<ContactForm client:visible />
 	</div>
 	<Toaster client:idle />
+
+	<Footer slot='footer' />
 </Layout>

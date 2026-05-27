@@ -4,8 +4,8 @@ test.describe('Navigation', () => {
 	test('should have working navigation links', async ({ page }) => {
 		await page.goto('/');
 
-		// Check if navigation exists
-		const nav = page.locator('nav');
+		// Scope to the header nav (the footer also has a <nav> landmark).
+		const nav = page.locator('header nav');
 		await expect(nav).toBeVisible();
 
 		// Check for navigation links in the header nav (not the hero buttons)
@@ -22,7 +22,7 @@ test.describe('Navigation', () => {
 		await page.goto('/');
 
 		// Use the nav link, not the hero button
-		const aboutLink = page.locator('nav').getByRole('link', { name: 'About', exact: true });
+		const aboutLink = page.locator('header nav').getByRole('link', { name: 'About', exact: true });
 		await aboutLink.click();
 
 		await expect(page).toHaveURL(/\/about/);
@@ -33,7 +33,9 @@ test.describe('Navigation', () => {
 		await page.goto('/');
 
 		// Use the nav link, not the hero button
-		const contactLink = page.locator('nav').getByRole('link', { name: 'Contact', exact: true });
+		const contactLink = page
+			.locator('header nav')
+			.getByRole('link', { name: 'Contact', exact: true });
 		await contactLink.click();
 
 		await expect(page).toHaveURL(/\/contact/);
@@ -43,7 +45,7 @@ test.describe('Navigation', () => {
 	test('should navigate back to Home page', async ({ page }) => {
 		await page.goto('/about');
 
-		const homeLink = page.locator('nav').getByRole('link', { name: 'Home', exact: true });
+		const homeLink = page.locator('header nav').getByRole('link', { name: 'Home', exact: true });
 		await homeLink.click();
 
 		await expect(page).toHaveURL('/');
