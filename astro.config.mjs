@@ -22,6 +22,8 @@ export default defineConfig({
 		edgeMiddleware: false,
 	}),
 	vite: {
+		// @ts-expect-error — Tailwind v4 vite plugin's type widening is incompatible
+		// with Astro's PluginOption typing; runtime behavior is correct.
 		plugins: [tailwindcss()],
 	},
 	integrations: [
