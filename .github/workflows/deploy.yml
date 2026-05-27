@@ -3,10 +3,8 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [main]
-    paths-ignore: ['**/*.md', 'docs/**', 'PROMPT.md']
   pull_request:
     branches: [main]
-    paths-ignore: ['**/*.md', 'docs/**', 'PROMPT.md']
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
