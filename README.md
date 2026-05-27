@@ -39,7 +39,7 @@ Netlify's git-driven auto-build should be disabled in the Netlify UI; CI is the 
 
 See `.env.example`. The contact form's API route (`/api/emails`) needs all `RESEND_*` values. Sentry vars are optional but recommended for production.
 
-The contact form is rate-limited (3 submissions per 60s per IP) using an in-memory map. On Netlify Functions this is per-instance and best-effort — if abuse becomes a concern, swap in a distributed limiter (Upstash, Netlify Blobs, etc.).
+The contact form is rate-limited to **3 submissions per 60s per IP**, backed by [Netlify Blobs](https://docs.netlify.com/blobs/overview/) so the limit holds across cold starts and function instances. When Blobs is unavailable (e.g., local `astro dev` without `netlify dev`) the limiter falls back to an in-memory map for the same window.
 
 ## Architecture notes
 
