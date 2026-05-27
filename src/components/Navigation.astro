@@ -3,19 +3,22 @@ const links = [
 	{ href: '/', label: 'Home' },
 	{ href: '/about', label: 'About' },
 	{ href: '/contact', label: 'Contact' },
+	{ href: '/privacy', label: 'Privacy' },
 ];
 
 const currentPath = Astro.url.pathname;
 ---
 
 <header
-	class='sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60'>
+	transition:persist
+	class='sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/60'>
 	<div class='container flex h-16 items-center px-4'>
 		<nav class='flex flex-1 items-center space-x-6 text-sm font-medium'>
 			{
 				links.map((link) => (
 					<a
 						href={link.href}
+						aria-current={currentPath === link.href ? 'page' : undefined}
 						class:list={[
 							'transition-all duration-200 hover:text-foreground hover:scale-105',
 							currentPath === link.href
@@ -32,7 +35,10 @@ const currentPath = Astro.url.pathname;
 				<button
 					id='theme-toggle'
 					class='inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 w-10'
-					aria-label='Toggle theme'>
+					aria-label='Toggle theme'
+					aria-haspopup='menu'
+					aria-expanded='false'
+					aria-controls='theme-menu'>
 					<svg
 						xmlns='http://www.w3.org/2000/svg'
 						width='24'
@@ -43,7 +49,8 @@ const currentPath = Astro.url.pathname;
 						stroke-width='2'
 						stroke-linecap='round'
 						stroke-linejoin='round'
-						class='sun-icon h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0'>
+						class='sun-icon h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0'
+						aria-hidden='true'>
 						<circle cx='12' cy='12' r='4'></circle>
 						<path d='M12 2v2'></path>
 						<path d='M12 20v2'></path>
@@ -64,14 +71,15 @@ const currentPath = Astro.url.pathname;
 						stroke-width='2'
 						stroke-linecap='round'
 						stroke-linejoin='round'
-						class='moon-icon absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100'>
+						class='moon-icon absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100'
+						aria-hidden='true'>
 						<path d='M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z'></path>
 					</svg>
 				</button>
-				<div id='theme-dropdown' class='theme-dropdown'>
-					<button data-theme='light' class='theme-option'>Light</button>
-					<button data-theme='dark' class='theme-option'>Dark</button>
-					<button data-theme='system' class='theme-option'>System</button>
+				<div id='theme-menu' class='theme-dropdown' role='menu'>
+					<button data-theme='light' class='theme-option' role='menuitem'>Light</button>
+					<button data-theme='dark' class='theme-option' role='menuitem'>Dark</button>
+					<button data-theme='system' class='theme-option' role='menuitem'>System</button>
 				</div>
 			</div>
 		</div>
@@ -162,59 +170,75 @@ const currentPath = Astro.url.pathname;
 		}
 	};
 
-	// Initialize theme
-	const currentTheme = getThemePreference();
-	setTheme(currentTheme || 'light');
+	function init() {
+		// Initialize theme
+		const currentTheme = getThemePreference();
+		setTheme(currentTheme || 'light');
 
-	// Dropdown toggle
-	const toggleButton = document.getElementById('theme-toggle');
-	const dropdown = document.getElementById('theme-dropdown');
+		// Dropdown toggle
+		const toggleButton = document.getElementById('theme-toggle');
+		const dropdown = document.getElementById('theme-menu');
 
-	let isOpen = false;
+		if (!toggleButton || !dropdown) return;
 
-	const openDropdown = () => {
-		if (dropdown) {
+		// Guard against double-binding when the header persists across transitions
+		if (toggleButton.dataset.bound === 'true') return;
+		toggleButton.dataset.bound = 'true';
+
+		let isOpen = false;
+
+		const openDropdown = () => {
 			dropdown.classList.add('open');
 			isOpen = true;
-		}
-	};
+			toggleButton.setAttribute('aria-expanded', 'true');
+		};
 
-	const closeDropdown = () => {
-		if (dropdown) {
+		const closeDropdown = () => {
 			dropdown.classList.remove('open');
 			isOpen = false;
-		}
-	};
+			toggleButton.setAttribute('aria-expanded', 'false');
+		};
 
-	toggleButton?.addEventListener('click', (e) => {
-		e.stopPropagation();
-		if (isOpen) {
-			closeDropdown();
-		} else {
-			openDropdown();
-		}
-	});
+		toggleButton.addEventListener('click', (e) => {
+			e.stopPropagation();
+			if (isOpen) {
+				closeDropdown();
+			} else {
+				openDropdown();
+			}
+		});
 
-	// Close dropdown when clicking outside
-	document.addEventListener('click', (e) => {
-		if (
-			isOpen &&
-			!dropdown?.contains(e.target as Node) &&
-			!toggleButton?.contains(e.target as Node)
-		) {
-			closeDropdown();
-		}
-	});
-
-	// Handle theme selection
-	const themeOptions = document.querySelectorAll('.theme-option');
-	themeOptions.forEach((option) => {
-		option.addEventListener('click', (e) => {
-			const theme = (e.target as HTMLElement).getAttribute('data-theme');
-			if (theme) {
-				setTheme(theme);
+		// Close dropdown when clicking outside
+		document.addEventListener('click', (e) => {
+			if (
+				isOpen &&
+				!dropdown.contains(e.target as Node) &&
+				!toggleButton.contains(e.target as Node)
+			) {
 				closeDropdown();
 			}
 		});
-	});
+
+		// Close dropdown on Escape and refocus toggle
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape' && isOpen) {
+				closeDropdown();
+				(toggleButton as HTMLButtonElement).focus();
+			}
+		});
+
+		// Handle theme selection
+		const themeOptions = document.querySelectorAll('.theme-option');
+		themeOptions.forEach((option) => {
+			option.addEventListener('click', (e) => {
+				const theme = (e.target as HTMLElement).getAttribute('data-theme');
+				if (theme) {
+					setTheme(theme);
+					closeDropdown();
+				}
+			});
+		});
+	}
+
+	document.addEventListener('astro:page-load', init);
 </script>

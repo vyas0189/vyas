@@ -1,0 +1,22 @@
+[
+	{
+		"name": "Sentry browser chunk",
+		"path": "dist/_astro/page.*.js",
+		"limit": "60 KB"
+	},
+	{
+		"name": "React vendor",
+		"path": "dist/_astro/client.*.js",
+		"limit": "65 KB"
+	},
+	{
+		"name": "Contact form (RHF + zod)",
+		"path": "dist/_astro/contact-form.*.js",
+		"limit": "50 KB"
+	},
+	{
+		"name": "CSS",
+		"path": "dist/_astro/*.css",
+		"limit": "12 KB"
+	}
+]

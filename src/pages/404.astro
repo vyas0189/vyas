@@ -1,0 +1,32 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import Navigation from '@/components/Navigation.astro';
+---
+
+<Layout title="404 — Page Not Found" description="The page you're looking for doesn't exist.">
+  <Navigation slot="header" />
+  <section class="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center text-center px-4">
+    <p class="text-sm uppercase tracking-widest text-muted-foreground">Error 404</p>
+    <h1 class="mt-2 text-5xl font-bold sm:text-6xl">Page not found</h1>
+    <p class="mt-4 max-w-md text-muted-foreground">
+      Looks like the page you're after doesn't exist. It might have moved, or the link could be wrong.
+    </p>
+    <div class="mt-8 flex gap-3">
+      <a
+        href="/"
+        class="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+      >
+        Back to home
+      </a>
+      <a
+        href="/contact"
+        class="inline-flex items-center rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-accent"
+      >
+        Contact me
+      </a>
+    </div>
+    <p class="mt-6 text-xs text-muted-foreground">
+      Or read the <a href="/privacy" class="underline hover:text-foreground">privacy policy</a>.
+    </p>
+  </section>
+</Layout>

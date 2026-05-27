@@ -1,111 +1,148 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { formSchema } from '@/lib/schemas';
 
 describe('formSchema validation', () => {
-  it('should validate correct form data', () => {
-    const validData = {
-      name: 'John Doe',
-      email: 'john@example.com',
-      message: 'This is a test message with enough characters.',
-    };
+	it('should validate correct form data', () => {
+		const validData = {
+			name: 'John Doe',
+			email: 'john@example.com',
+			message: 'This is a test message with enough characters.',
+		};
 
-    const result = formSchema.safeParse(validData);
-    expect(result.success).toBe(true);
-  });
+		const result = formSchema.safeParse(validData);
+		expect(result.success).toBe(true);
+	});
 
-  it('should reject name that is too short', () => {
-    const invalidData = {
-      name: 'J',
-      email: 'john@example.com',
-      message: 'This is a test message with enough characters.',
-    };
+	it('should reject name that is too short', () => {
+		const invalidData = {
+			name: 'J',
+			email: 'john@example.com',
+			message: 'This is a test message with enough characters.',
+		};
 
-    const result = formSchema.safeParse(invalidData);
-    expect(result.success).toBe(false);
-  });
+		const result = formSchema.safeParse(invalidData);
+		expect(result.success).toBe(false);
+	});
 
-  it('should reject name that is too long', () => {
-    const invalidData = {
-      name: 'A'.repeat(51),
-      email: 'john@example.com',
-      message: 'This is a test message with enough characters.',
-    };
+	it('should reject name that is too long', () => {
+		const invalidData = {
+			name: 'A'.repeat(101),
+			email: 'john@example.com',
+			message: 'This is a test message with enough characters.',
+		};
 
-    const result = formSchema.safeParse(invalidData);
-    expect(result.success).toBe(false);
-  });
+		const result = formSchema.safeParse(invalidData);
+		expect(result.success).toBe(false);
+	});
 
-  it('should reject invalid email format', () => {
-    const invalidData = {
-      name: 'John Doe',
-      email: 'invalid-email',
-      message: 'This is a test message with enough characters.',
-    };
+	it('should reject name with newline characters', () => {
+		const invalidData = {
+			name: 'John\nDoe',
+			email: 'john@example.com',
+			message: 'This is a test message with enough characters.',
+		};
 
-    const result = formSchema.safeParse(invalidData);
-    expect(result.success).toBe(false);
-  });
+		const result = formSchema.safeParse(invalidData);
+		expect(result.success).toBe(false);
+	});
 
-  it('should reject message that is too short', () => {
-    const invalidData = {
-      name: 'John Doe',
-      email: 'john@example.com',
-      message: 'Short',
-    };
+	it('should reject email that is too long', () => {
+		const invalidData = {
+			name: 'John Doe',
+			email: `${'a'.repeat(250)}@example.com`,
+			message: 'This is a test message with enough characters.',
+		};
 
-    const result = formSchema.safeParse(invalidData);
-    expect(result.success).toBe(false);
-  });
+		const result = formSchema.safeParse(invalidData);
+		expect(result.success).toBe(false);
+	});
 
-  it('should reject message that is too long', () => {
-    const invalidData = {
-      name: 'John Doe',
-      email: 'john@example.com',
-      message: 'A'.repeat(1001),
-    };
+	it('should reject invalid email format', () => {
+		const invalidData = {
+			name: 'John Doe',
+			email: 'invalid-email',
+			message: 'This is a test message with enough characters.',
+		};
 
-    const result = formSchema.safeParse(invalidData);
-    expect(result.success).toBe(false);
-  });
+		const result = formSchema.safeParse(invalidData);
+		expect(result.success).toBe(false);
+	});
 
-  it('should reject missing required fields', () => {
-    const invalidData = {
-      name: 'John Doe',
-    };
+	it('should reject message that is too short', () => {
+		const invalidData = {
+			name: 'John Doe',
+			email: 'john@example.com',
+			message: 'Short',
+		};
 
-    const result = formSchema.safeParse(invalidData);
-    expect(result.success).toBe(false);
-  });
+		const result = formSchema.safeParse(invalidData);
+		expect(result.success).toBe(false);
+	});
 
-  it('should accept boundary values for name (2 and 50 characters)', () => {
-    const minData = {
-      name: 'AB',
-      email: 'test@example.com',
-      message: 'A'.repeat(10),
-    };
-    expect(formSchema.safeParse(minData).success).toBe(true);
+	it('should reject message that is too long', () => {
+		const invalidData = {
+			name: 'John Doe',
+			email: 'john@example.com',
+			message: 'A'.repeat(5001),
+		};
 
-    const maxData = {
-      name: 'A'.repeat(50),
-      email: 'test@example.com',
-      message: 'A'.repeat(10),
-    };
-    expect(formSchema.safeParse(maxData).success).toBe(true);
-  });
+		const result = formSchema.safeParse(invalidData);
+		expect(result.success).toBe(false);
+	});
 
-  it('should accept boundary values for message (10 and 1000 characters)', () => {
-    const minData = {
-      name: 'John Doe',
-      email: 'test@example.com',
-      message: 'A'.repeat(10),
-    };
-    expect(formSchema.safeParse(minData).success).toBe(true);
+	it('should reject missing required fields', () => {
+		const invalidData = {
+			name: 'John Doe',
+		};
 
-    const maxData = {
-      name: 'John Doe',
-      email: 'test@example.com',
-      message: 'A'.repeat(1000),
-    };
-    expect(formSchema.safeParse(maxData).success).toBe(true);
-  });
+		const result = formSchema.safeParse(invalidData);
+		expect(result.success).toBe(false);
+	});
+
+	it('should accept boundary values for name (2 and 100 characters)', () => {
+		const minData = {
+			name: 'AB',
+			email: 'test@example.com',
+			message: 'A'.repeat(10),
+		};
+		expect(formSchema.safeParse(minData).success).toBe(true);
+
+		const maxData = {
+			name: 'A'.repeat(100),
+			email: 'test@example.com',
+			message: 'A'.repeat(10),
+		};
+		expect(formSchema.safeParse(maxData).success).toBe(true);
+	});
+
+	it('should accept boundary values for message (10 and 5000 characters)', () => {
+		const minData = {
+			name: 'John Doe',
+			email: 'test@example.com',
+			message: 'A'.repeat(10),
+		};
+		expect(formSchema.safeParse(minData).success).toBe(true);
+
+		const maxData = {
+			name: 'John Doe',
+			email: 'test@example.com',
+			message: 'A'.repeat(5000),
+		};
+		expect(formSchema.safeParse(maxData).success).toBe(true);
+	});
+
+	it('should trim whitespace from name and email', () => {
+		const data = {
+			name: '  John Doe  ',
+			email: '  john@example.com  ',
+			message: 'This is a test message with enough characters.',
+		};
+
+		const result = formSchema.safeParse(data);
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.name).toBe('John Doe');
+			expect(result.data.email).toBe('john@example.com');
+		}
+	});
 });
