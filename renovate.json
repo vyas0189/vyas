@@ -1,5 +1,50 @@
 {
-  "extends": [
-    "config:recommended"
-  ]
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": [
+		"config:recommended",
+		":dependencyDashboard",
+		":semanticCommits",
+		":automergeDigest",
+		":automergePatch",
+		"group:allNonMajor"
+	],
+	"schedule": ["before 6am on monday"],
+	"timezone": "America/New_York",
+	"labels": ["dependencies"],
+	"rangeStrategy": "bump",
+	"prHourlyLimit": 4,
+	"prConcurrentLimit": 8,
+	"vulnerabilityAlerts": {
+		"labels": ["security"],
+		"automerge": true,
+		"schedule": ["at any time"]
+	},
+	"packageRules": [
+		{
+			"matchUpdateTypes": ["patch", "pin", "digest"],
+			"automerge": true,
+			"automergeType": "branch"
+		},
+		{
+			"matchDepTypes": ["devDependencies"],
+			"matchUpdateTypes": ["minor", "patch"],
+			"automerge": true
+		},
+		{
+			"matchPackagePatterns": ["^@astrojs/", "^astro$"],
+			"groupName": "astro"
+		},
+		{
+			"matchPackagePatterns": ["^@sentry/"],
+			"groupName": "sentry"
+		},
+		{
+			"matchPackagePatterns": ["^@radix-ui/"],
+			"groupName": "radix"
+		},
+		{
+			"matchPackageNames": ["@playwright/test", "playwright"],
+			"groupName": "playwright"
+		}
+	]
 }

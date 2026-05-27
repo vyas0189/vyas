@@ -14,9 +14,11 @@ import profileImage from '../../assets/profile.jpeg';
 					class='aspect-square h-full w-full object-cover'
 					width={256}
 					height={256}
+					widths={[128, 256]}
 					sizes='128px'
-					quality={90}
+					quality={80}
 					loading='eager'
+					fetchpriority='high'
 				/>
 			</div>
 		</div>
@@ -31,7 +33,7 @@ import profileImage from '../../assets/profile.jpeg';
 	<div class='mt-8 flex gap-4'>
 		<a
 			href='/contact'
-			class='inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-white text-black border border-gray-200 shadow-sm hover:bg-gray-100 hover:border-gray-300 h-9 px-4 py-2'>
+			class='inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 border border-transparent shadow-sm h-9 px-4 py-2'>
 			<svg
 				xmlns='http://www.w3.org/2000/svg'
 				width='16'
@@ -42,7 +44,8 @@ import profileImage from '../../assets/profile.jpeg';
 				stroke-width='2'
 				stroke-linecap='round'
 				stroke-linejoin='round'
-				class='mr-2'>
+				class='mr-2'
+				aria-hidden='true'>
 				<rect width='20' height='16' x='2' y='4' rx='2'></rect>
 				<path d='m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7'></path>
 			</svg>
@@ -51,7 +54,7 @@ import profileImage from '../../assets/profile.jpeg';
 		<a
 			href='/about'
 			class='inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground hover:border-accent h-9 px-4 py-2'>
-			Learn More
+			About Vyas
 		</a>
 	</div>
 	<div class='mt-6 flex gap-4'>

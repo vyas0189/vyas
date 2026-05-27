@@ -1,0 +1,39 @@
+---
+import Layout from '@/layouts/Layout.astro';
+
+const lastUpdated = '2026-05-27';
+---
+
+<Layout title="Privacy Policy — Vyas Ramankulangara" description="How this site handles your data.">
+  <section class="max-w-3xl mx-auto px-4 py-16">
+    <h1 class="text-4xl font-bold mb-2">Privacy Policy</h1>
+    <p class="text-sm text-muted-foreground mb-12">Last updated: {lastUpdated}</p>
+
+    <div class="prose prose-neutral dark:prose-invert space-y-6">
+      <section>
+        <h2 class="text-2xl font-semibold mb-3">What this site collects</h2>
+        <p>This is a personal portfolio. The only data this site collects from you is what you voluntarily submit through the contact form.</p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold mb-3">Contact form</h2>
+        <p>The contact form sends your name, email address, and message to my inbox via <a href="https://resend.com" rel="noopener noreferrer" class="underline">Resend</a>, a transactional email provider. Resend stores delivery metadata according to <a href="https://resend.com/legal/privacy-policy" rel="noopener noreferrer" class="underline">their privacy policy</a>. Submissions are rate-limited to prevent abuse.</p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold mb-3">Error monitoring</h2>
+        <p>This site uses <a href="https://sentry.io" rel="noopener noreferrer" class="underline">Sentry</a> to capture JavaScript errors. Sentry receives the page URL, browser user-agent, and a stack trace when an error occurs. Sensitive fields (your name, email, message body) are redacted before they leave the browser. No session replay or analytics tracking is enabled.</p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold mb-3">Cookies</h2>
+        <p>This site does not set any cookies. Browser local storage is used only to remember your light/dark mode preference.</p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold mb-3">Your rights & removal</h2>
+        <p>To request deletion of a previous contact submission, email <a href="mailto:vyas0189@gmail.com" class="underline">vyas0189@gmail.com</a>.</p>
+      </section>
+    </div>
+  </section>
+</Layout>

@@ -2,6 +2,7 @@
 import Layout from '@/layouts/Layout.astro';
 import Navigation from '@/components/Navigation.astro';
 import { ContactForm } from '@/components/contact-form';
+import { Toaster } from '@/components/ui/sonner';
 ---
 
 <Layout
@@ -10,6 +11,7 @@ import { ContactForm } from '@/components/contact-form';
 	<Navigation slot='header' />
 
 	<div class='container mx-auto px-4'>
-		<ContactForm client:load />
+		<ContactForm client:visible />
 	</div>
+	<Toaster client:idle />
 </Layout>

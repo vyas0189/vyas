@@ -1,13 +1,57 @@
-# Astro with Tailwind
+# vyas-portfolio
 
-```sh
-npm create astro@latest -- --template with-tailwindcss
+Personal portfolio site for Vyas Ramankulangara.
+
+**Stack:** Astro 6 (static + one SSR API route) · React 19 · Tailwind v4 · Resend · Sentry · Netlify
+
+## Development
+
+```bash
+npm install
+cp .env.example .env
+# Fill in RESEND_* and SENTRY_* values
+npm run dev
 ```
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/with-tailwindcss)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/with-tailwindcss)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/with-tailwindcss/devcontainer.json)
+Open http://localhost:4321.
 
-Astro comes with [Tailwind](https://tailwindcss.com) support out of the box. This example showcases how to style your Astro project with Tailwind.
+## Scripts
 
-For complete setup instructions, please see our [Tailwind Integration Guide](https://docs.astro.build/en/guides/integrations-guide/tailwind).
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start dev server |
+| `npm run build` | Production build |
+| `npm run preview` | Preview the built site locally |
+| `npm run typecheck` | Run `astro check` |
+| `npm run test:unit` | Vitest unit tests |
+| `npm run test:e2e` | Playwright e2e tests |
+| `npm test` | Unit + e2e |
+
+## Deployment
+
+Deploys are driven by GitHub Actions (`.github/workflows/deploy.yml`):
+- **PRs** → Netlify deploy preview + e2e tests against the preview URL.
+- **Push to `main`** → `--prod` deploy + e2e against production.
+
+Netlify's git-driven auto-build should be disabled in the Netlify UI; CI is the single source of truth.
+
+## Required env vars
+
+See `.env.example`. The contact form's API route (`/api/emails`) needs all `RESEND_*` values. Sentry vars are optional but recommended for production.
+
+Optional: `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` enable Redis-backed rate limiting (3 submissions per 60s per IP). Without them the API falls back to an in-memory limiter, which is per-instance only on Netlify Functions and effectively cosmetic in production.
+
+## Architecture notes
+
+- **Static-first.** Only `src/pages/api/emails.ts` runs server-side. Everything else is pre-rendered.
+- **Edge middleware** (`src/middleware.ts`) applies CSP and CSRF checks on the request path.
+- **Security headers** are split: most live in `netlify.toml`; CSP lives in the middleware (will need nonces eventually).
+- **Sentry source maps** are uploaded at build time and deleted from `dist/` after upload (see `sourceMapsUploadOptions.filesToDeleteAfterUpload` in `astro.config.mjs`).
+
+## Pre-commit hooks
+
+This repo uses [lefthook](https://github.com/evilmartians/lefthook) to run Biome's lint+format on staged files before each commit. The hook installs automatically on `npm install` (via the `prepare` script). To run it manually: `npx lefthook run pre-commit`.
+
+## License
+
+MIT.

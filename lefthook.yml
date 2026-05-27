@@ -1,0 +1,7 @@
+pre-commit:
+  parallel: true
+  commands:
+    biome-check:
+      glob: '*.{js,jsx,ts,tsx,mjs,cjs,json}'
+      run: npx biome check --no-errors-on-unmatched --write {staged_files} && git add {staged_files}
+      stage_fixed: true

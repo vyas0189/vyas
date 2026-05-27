@@ -3,12 +3,14 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [main]
+    paths-ignore: ['**/*.md', 'docs/**', 'PROMPT.md']
   pull_request:
     branches: [main]
+    paths-ignore: ['**/*.md', 'docs/**', 'PROMPT.md']
 
-permissions:
-  contents: read
-  pull-requests: write
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   NODE_VERSION: "22"
@@ -17,6 +19,8 @@ jobs:
   build-and-test:
     name: Build and Unit Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -30,17 +34,37 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Security audit
-        run: npm audit --audit-level=high
-        continue-on-error: true
+      - name: Dependency review
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Type check
+        run: npm run check
 
       - name: Run unit tests
         run: npm run test:unit
 
       - name: Build project
         run: npm run build
+        env:
+          PUBLIC_SENTRY_DSN: ${{ secrets.PUBLIC_SENTRY_DSN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          PUBLIC_COMMIT_REF: ${{ github.sha }}
+          PUBLIC_DEPLOY_CONTEXT: production
+
+      - name: Bundle size check
+        run: npm run size
 
       - name: Upload build artifacts
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: netlify-build
@@ -53,6 +77,8 @@ jobs:
     name: Deploy to Netlify
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       deploy_url: ${{ steps.netlify-deploy.outputs.deploy_url }}
     steps:
@@ -69,7 +95,7 @@ jobs:
         run: npm ci
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v7
         with:
           name: netlify-build
 
@@ -106,9 +132,10 @@ jobs:
 
   e2e-tests:
     name: E2E Tests
-    if: github.event_name == 'pull_request'
     needs: deploy
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -122,11 +149,29 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: pw-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: pw-${{ runner.os }}-
 
-      - name: Wait for deployment to be ready
-        run: sleep 30
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Wait for deploy to be live
+        run: |
+          URL="${{ needs.deploy.outputs.deploy_url }}"
+          for i in {1..30}; do
+            if curl -fsS --max-time 5 "$URL" >/dev/null; then
+              echo "Deploy is live at $URL"
+              exit 0
+            fi
+            echo "Attempt $i: not yet ready, waiting 2s..."
+            sleep 2
+          done
+          echo "::error::Deploy did not become reachable within 60s"
+          exit 1
 
       - name: Run E2E tests
         run: npm run test:e2e
@@ -147,27 +192,39 @@ jobs:
     if: github.event_name == 'pull_request' && always()
     needs: [deploy, e2e-tests]
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
     steps:
-      - name: Comment PR with results
-        uses: actions/github-script@v8
+      - name: Sticky PR comment
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
         with:
-          script: |
-            const deployUrl = '${{ needs.deploy.outputs.deploy_url }}';
-            const e2eStatus = '${{ needs.e2e-tests.result }}';
-            const testStatus = e2eStatus === 'success' ? '✅ Passed' : '❌ Failed';
-            const overallStatus = e2eStatus === 'success' ? '✅ All checks passed!' : '❌ E2E tests failed - deployment blocked';
+          header: deploy-status
+          message: |
+            ### Deploy & test results
+            - Deploy: ${{ needs.deploy.result }}
+            - E2E: ${{ needs.e2e-tests.result }}
+            - Preview: ${{ needs.deploy.outputs.deploy_url }}
 
-            const comment = `### 🚀 Preview Deployment
-
-            **Preview URL:** ${deployUrl}
-
-            **E2E Test Results:** ${testStatus}
-
-            **Status:** ${overallStatus}`;
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
+  lighthouse:
+    needs: [deploy, e2e-tests]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - name: Install
+        run: npm ci
+      - name: Run Lighthouse CI
+        run: |
+          npx @lhci/cli@latest autorun \
+            --collect.url=${{ needs.deploy.outputs.deploy_url }} \
+            --collect.url=${{ needs.deploy.outputs.deploy_url }}/about \
+            --collect.url=${{ needs.deploy.outputs.deploy_url }}/contact
