@@ -63,6 +63,7 @@
 		"@testing-library/user-event": "^14.6.1",
 		"@types/react": "^19.1.16",
 		"@types/react-dom": "^19.1.9",
+		"@vitejs/plugin-react": "^6.0.2",
 		"@vitest/ui": "^4.0.16",
 		"happy-dom": "^20.9.0",
 		"lefthook": "^2.1.8",

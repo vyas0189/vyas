@@ -1,4 +1,5 @@
 import { resolve } from 'node:path';
+import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
@@ -19,6 +20,8 @@ export default defineConfig({
 				resolve: { alias: { '@': resolve(__dirname, './src') } },
 			},
 			{
+				// React plugin handles JSX (Vitest 4 / Rolldown does not transform JSX itself).
+				plugins: [react()],
 				test: {
 					name: 'dom',
 					environment: 'happy-dom',
@@ -26,7 +29,6 @@ export default defineConfig({
 					setupFiles: ['./tests/setup.ts'],
 				},
 				resolve: { alias: { '@': resolve(__dirname, './src') } },
-				esbuild: { jsx: 'automatic', jsxImportSource: 'react' },
 			},
 		],
 		coverage: {
