@@ -107,9 +107,8 @@ describe('ContactForm', () => {
 		await user.click(screen.getByRole('button', { name: /send message/i }));
 
 		expect(await screen.findByRole('status')).toHaveTextContent(/email service is having issues/i);
-		expect(await screen.findByRole('status')).toHaveTextContent(
-			new RegExp(CONTACT_EMAIL.replace(/[.+]/g, '\\$&'), 'i'),
-		);
+		// Plain string does substring match — no regex escaping needed.
+		expect(await screen.findByRole('status')).toHaveTextContent(CONTACT_EMAIL);
 
 		// A mailto link exists somewhere in the DOM (either contact info or toast).
 		const mailtoLinks = screen
