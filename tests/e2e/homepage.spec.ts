@@ -46,7 +46,7 @@ test.describe('Homepage', () => {
 		await page.goto('/');
 
 		await expect(page.locator('body')).toBeVisible();
-		const nav = page.locator('nav');
+		const nav = page.locator('header nav');
 		await expect(nav).toBeVisible();
 	});
 
