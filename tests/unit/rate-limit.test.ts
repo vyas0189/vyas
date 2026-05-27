@@ -1,23 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
-const originalEnv = { ...process.env };
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 beforeEach(() => {
+	// Each test gets a fresh in-memory store via module re-import.
 	vi.resetModules();
-	vi.doUnmock('@upstash/ratelimit');
-	vi.doUnmock('@upstash/redis');
-	process.env = { ...originalEnv };
-	delete process.env.UPSTASH_REDIS_REST_URL;
-	delete process.env.UPSTASH_REDIS_REST_TOKEN;
 });
 
-afterEach(() => {
-	process.env = originalEnv;
-	vi.restoreAllMocks();
-	vi.unstubAllEnvs();
-});
-
-describe('checkRateLimit (in-memory fallback)', () => {
+describe('checkRateLimit', () => {
 	it('allows the first 3 requests in a window', async () => {
 		const { checkRateLimit } = await import('@/lib/rate-limit');
 		const r1 = await checkRateLimit('1.2.3.4');
@@ -86,111 +74,5 @@ describe('checkRateLimit (in-memory fallback)', () => {
 		} finally {
 			vi.useRealTimers();
 		}
-	});
-});
-
-describe('checkRateLimit (Upstash branch)', () => {
-	it('uses Upstash when env vars are set', async () => {
-		process.env.UPSTASH_REDIS_REST_URL = 'https://example.upstash.io';
-		process.env.UPSTASH_REDIS_REST_TOKEN = 'fake-token';
-
-		const limitMock = vi.fn().mockResolvedValue({
-			success: true,
-			remaining: 2,
-			reset: Date.now() + 60_000,
-		});
-		const redisCtor = vi.fn();
-		const ratelimitCtor = vi.fn();
-
-		vi.doMock('@upstash/ratelimit', () => ({
-			Ratelimit: class {
-				static slidingWindow(..._args: unknown[]) {
-					return { type: 'sliding-window' };
-				}
-				constructor(opts: unknown) {
-					ratelimitCtor(opts);
-				}
-				limit = limitMock;
-			},
-		}));
-		vi.doMock('@upstash/redis', () => ({
-			Redis: class {
-				constructor(opts: unknown) {
-					redisCtor(opts);
-				}
-			},
-		}));
-
-		const { checkRateLimit } = await import('@/lib/rate-limit');
-		const r = await checkRateLimit('9.9.9.9');
-
-		expect(r.success).toBe(true);
-		expect(r.remaining).toBe(2);
-		expect(limitMock).toHaveBeenCalledTimes(1);
-		// Module prefixes the key with "email-form:" — confirm IP is in the key.
-		expect(limitMock.mock.calls[0][0]).toEqual(expect.stringContaining('9.9.9.9'));
-		// Redis was constructed with the env credentials.
-		expect(redisCtor).toHaveBeenCalledWith(
-			expect.objectContaining({
-				url: 'https://example.upstash.io',
-				token: 'fake-token',
-			}),
-		);
-		// Ratelimit was constructed with a redis instance and a limiter.
-		expect(ratelimitCtor).toHaveBeenCalledTimes(1);
-	});
-
-	it('propagates Upstash failure (success: false)', async () => {
-		process.env.UPSTASH_REDIS_REST_URL = 'https://example.upstash.io';
-		process.env.UPSTASH_REDIS_REST_TOKEN = 'fake-token';
-
-		const resetTs = Date.now() + 60_000;
-		const limitMock = vi.fn().mockResolvedValue({
-			success: false,
-			remaining: 0,
-			reset: resetTs,
-		});
-
-		vi.doMock('@upstash/ratelimit', () => ({
-			Ratelimit: class {
-				static slidingWindow(..._args: unknown[]) {
-					return {};
-				}
-				limit = limitMock;
-			},
-		}));
-		vi.doMock('@upstash/redis', () => ({
-			Redis: class {},
-		}));
-
-		const { checkRateLimit } = await import('@/lib/rate-limit');
-		const r = await checkRateLimit('10.0.0.1');
-
-		expect(r.success).toBe(false);
-		expect(r.remaining).toBe(0);
-		expect(r.reset).toBe(resetTs);
-	});
-
-	it('falls back to in-memory when only one Upstash env var is set', async () => {
-		process.env.UPSTASH_REDIS_REST_URL = 'https://example.upstash.io';
-		// UPSTASH_REDIS_REST_TOKEN intentionally missing.
-
-		const limitMock = vi.fn();
-		vi.doMock('@upstash/ratelimit', () => ({
-			Ratelimit: class {
-				static slidingWindow() {
-					return {};
-				}
-				limit = limitMock;
-			},
-		}));
-		vi.doMock('@upstash/redis', () => ({
-			Redis: class {},
-		}));
-
-		const { checkRateLimit } = await import('@/lib/rate-limit');
-		const r = await checkRateLimit('partial-env');
-		expect(r.success).toBe(true);
-		expect(limitMock).not.toHaveBeenCalled();
 	});
 });

@@ -1,42 +1,19 @@
-import { Ratelimit } from '@upstash/ratelimit';
-import { Redis } from '@upstash/redis';
+// In-memory sliding-window rate limiter. Per-instance only — on Netlify
+// Functions each cold-start gets its own Map, so this is best-effort and
+// cosmetic in production. Good enough for a personal portfolio's contact form;
+// swap for a distributed limiter (Upstash, Netlify Blobs, etc.) if abuse
+// becomes a concern.
 
 const RATE_LIMIT = 3;
 const RATE_WINDOW_MS = 60_000;
 
-const UPSTASH_REDIS_REST_URL =
-	process.env.UPSTASH_REDIS_REST_URL || import.meta.env.UPSTASH_REDIS_REST_URL;
-const UPSTASH_REDIS_REST_TOKEN =
-	process.env.UPSTASH_REDIS_REST_TOKEN || import.meta.env.UPSTASH_REDIS_REST_TOKEN;
-
-const hasUpstash = Boolean(UPSTASH_REDIS_REST_URL && UPSTASH_REDIS_REST_TOKEN);
-
-let ratelimit: Ratelimit | null = null;
-
-if (hasUpstash) {
-	const redis = new Redis({
-		url: UPSTASH_REDIS_REST_URL as string,
-		token: UPSTASH_REDIS_REST_TOKEN as string,
-	});
-
-	ratelimit = new Ratelimit({
-		redis,
-		limiter: Ratelimit.slidingWindow(RATE_LIMIT, `${RATE_WINDOW_MS} ms`),
-		prefix: 'email-form',
-		analytics: false,
-	});
-} else {
-	console.warn('rate-limit: falling back to in-memory (Upstash env vars missing)');
-}
-
-// In-memory fallback store
 const memoryStore = new Map<string, { count: number; resetAt: number }>();
 
-function checkInMemory(ip: string): {
+export async function checkRateLimit(ip: string): Promise<{
 	success: boolean;
 	remaining: number;
 	reset: number;
-} {
+}> {
 	const now = Date.now();
 	const entry = memoryStore.get(ip);
 
@@ -53,21 +30,4 @@ function checkInMemory(ip: string): {
 		remaining,
 		reset: entry.resetAt,
 	};
-}
-
-export async function checkRateLimit(ip: string): Promise<{
-	success: boolean;
-	remaining: number;
-	reset: number;
-}> {
-	if (ratelimit) {
-		const result = await ratelimit.limit(`email-form:${ip}`);
-		return {
-			success: result.success,
-			remaining: result.remaining,
-			reset: result.reset,
-		};
-	}
-
-	return checkInMemory(ip);
 }
