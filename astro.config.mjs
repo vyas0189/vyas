@@ -9,7 +9,7 @@ import { defineConfig } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://vyasr.com', // TODO: update if domain changes
+	site: 'https://vyasr.space',
 	output: 'static',
 	prefetch: {
 		prefetchAll: false,

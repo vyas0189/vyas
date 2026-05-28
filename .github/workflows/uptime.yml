@@ -21,7 +21,7 @@ jobs:
       - name: Ping production
         id: ping
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://vyasr.com/)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://vyasr.space/)
           echo "status=$STATUS" >> "$GITHUB_OUTPUT"
           if [ "$STATUS" != "200" ]; then
             echo "::error::Site returned HTTP $STATUS"
@@ -35,7 +35,7 @@ jobs:
           script: |
             const title = `Uptime check failed: ${new Date().toISOString().slice(0, 16)}Z`;
             const body = [
-              `The hourly uptime check against https://vyasr.com/ failed.`,
+              `The hourly uptime check against https://vyasr.space/ failed.`,
               ``,
               `**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
               `**Time:** ${new Date().toISOString()}`,
