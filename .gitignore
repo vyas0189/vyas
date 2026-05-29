@@ -49,3 +49,8 @@ CLAUDE.md
 skills-lock.json
 # Local Netlify folder
 .netlify
+
+# bun (using npm for this project)
+bun.lock
+bun.lockb
+.bun/
