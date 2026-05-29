@@ -21,7 +21,7 @@
 		"prepare": "lefthook install || true"
 	},
 	"engines": {
-		"node": ">=22.0.0"
+		"node": ">=24.0.0"
 	},
 	"dependencies": {
 		"@astrojs/netlify": "^7.0.10",
