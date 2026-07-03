@@ -41,5 +41,9 @@ export default defineConfig({
 				command: 'npm run dev',
 				url: 'http://localhost:4321',
 				reuseExistingServer: !process.env.CI,
+				// Astro 7 auto-backgrounds `astro dev` when it detects an AI coding
+				// agent, which detaches it from this process and breaks webServer's
+				// startup detection.
+				env: { ASTRO_DEV_BACKGROUND: '0' },
 			},
 });
