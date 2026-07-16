@@ -33,7 +33,7 @@
 		"@radix-ui/react-label": "^2.1.11",
 		"@radix-ui/react-slot": "^1.2.5",
 		"@react-email/components": "^1.0.0",
-		"@sentry/astro": "^10.17.0",
+		"@sentry/astro": "^10.66.0",
 		"@tailwindcss/vite": "^4.1.13",
 		"astro": "^7.0.6",
 		"astro-og-canvas": "^0.13.0",
