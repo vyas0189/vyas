@@ -21,7 +21,7 @@
 		"prepare": "lefthook install || true"
 	},
 	"engines": {
-		"node": ">=24.0.0"
+		"node": ">=24.18.0"
 	},
 	"dependencies": {
 		"@astrojs/netlify": "^8.1.1",
@@ -40,11 +40,11 @@
 		"canvaskit-wasm": "^0.41.1",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
-		"lucide-react": "^1.16.0",
+		"lucide-react": "^1.25.0",
 		"react": "^19.1.1",
 		"react-dom": "^19.1.1",
-		"react-hook-form": "^7.63.0",
-		"resend": "^6.1.1",
+		"react-hook-form": "^7.82.0",
+		"resend": "^6.17.2",
 		"sonner": "^2.0.7",
 		"tailwind-merge": "^3.3.1",
 		"tailwindcss": "^4.1.13",
@@ -52,8 +52,8 @@
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.9",
-		"@axe-core/playwright": "^4.11.3",
-		"@biomejs/biome": "^2.4.15",
+		"@axe-core/playwright": "^4.12.1",
+		"@biomejs/biome": "^2.5.4",
 		"@lhci/cli": "^0.15.1",
 		"@playwright/test": "^1.61.1",
 		"@size-limit/preset-app": "^12.1.0",
@@ -64,7 +64,7 @@
 		"@types/react-dom": "^19.1.9",
 		"@vitejs/plugin-react": "^5.2.0",
 		"@vitest/ui": "^4.0.16",
-		"happy-dom": "^20.9.0",
+		"happy-dom": "^20.10.6",
 		"lefthook": "^2.1.8",
 		"size-limit": "^12.1.0",
 		"typescript": "^6.0.0",
@@ -75,9 +75,9 @@
 		"yaml": ">=2.8.3",
 		"tmp": ">=0.2.6",
 		"uuid": ">=11.1.1",
-		"@emnapi/runtime": ">=1.10.0",
+		"@emnapi/runtime": ">=1.11.2",
 		"@emnapi/core": ">=1.10.0",
-		"@emnapi/wasi-threads": ">=1.2.1",
+		"@emnapi/wasi-threads": ">=1.2.2",
 		"vite": "^8.0.13",
 		"esbuild": ">=0.28.1",
 		"@opentelemetry/core": ">=2.8.0",
