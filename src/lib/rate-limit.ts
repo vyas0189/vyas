@@ -18,13 +18,15 @@
 // race is acceptable (worst case: a couple extra messages slip through per
 // cold start).
 
-import { createHmac } from 'node:crypto';
+import { createHmac, randomInt } from 'node:crypto';
 import { getStore, type Store } from '@netlify/blobs';
 
 const RATE_LIMIT = 3;
 const RATE_WINDOW_MS = 60_000;
 const STALE_AFTER_MS = 60 * 60_000;
-const PRUNE_PROBABILITY = 0.1;
+// Sweep on ~1 in 10 requests. crypto.randomInt isn't needed for security here,
+// but it keeps static analyzers from flagging Math.random in security code.
+const PRUNE_ONE_IN = 10;
 const PRUNE_MAX_KEYS = 50;
 
 type Entry = { count: number; resetAt: number };
@@ -120,7 +122,7 @@ export async function checkRateLimit(ip: string): Promise<{
 
 	try {
 		const result = await checkInBlobs(store, key);
-		if (Math.random() < PRUNE_PROBABILITY) {
+		if (randomInt(PRUNE_ONE_IN) === 0) {
 			try {
 				await pruneStaleEntries(store);
 			} catch {

@@ -18,7 +18,8 @@ import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const SCRIPT_RE = /<script([^>]*)>([\s\S]*?)<\/script>/gi;
+// End tags may legally contain whitespace before '>' (e.g. `</script >`).
+const SCRIPT_RE = /<script([^>]*)>([\s\S]*?)<\/script\s*>/gi;
 const EXECUTABLE_TYPES = new Set(['', 'module', 'text/javascript', 'application/javascript']);
 
 /** Collect sha256 CSP hashes for every executable inline script in an HTML string. */

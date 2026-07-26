@@ -37,6 +37,11 @@ describe('extractInlineScriptHashes', () => {
 		const html = '<script>x()</script><script>x()</script>';
 		expect(extractInlineScriptHashes(html).size).toBe(1);
 	});
+
+	it('matches end tags containing whitespace, per the HTML spec', () => {
+		const html = '<script>a()</script ><script type="module">b()</script\n>';
+		expect(extractInlineScriptHashes(html)).toEqual(new Set([sha256('a()'), sha256('b()')]));
+	});
 });
 
 describe('buildCsp', () => {
