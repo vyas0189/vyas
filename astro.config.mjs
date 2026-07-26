@@ -12,7 +12,8 @@ export default defineConfig({
 	site: 'https://vyasr.space',
 	output: 'static',
 	prefetch: {
-		prefetchAll: false,
+		// Four tiny pages — prefetch every in-viewport link for instant navigation.
+		prefetchAll: true,
 		defaultStrategy: 'viewport',
 	},
 	adapter: netlify({

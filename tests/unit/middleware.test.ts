@@ -6,8 +6,6 @@ vi.mock('astro:middleware', () => ({
 	defineMiddleware: (fn: unknown) => fn,
 }));
 
-const CSP_HEADER = 'Content-Security-Policy';
-
 type OnRequestFn = (
 	context: { url: URL; request: Request },
 	next: () => Promise<Response>,
@@ -27,7 +25,7 @@ describe('middleware onRequest', () => {
 		vi.clearAllMocks();
 	});
 
-	it('GET request to / passes through and sets CSP header', async () => {
+	it('GET request to / passes through untouched', async () => {
 		const onRequest = await loadOnRequest();
 		const next = makeNext();
 		const response = await onRequest(
@@ -40,8 +38,6 @@ describe('middleware onRequest', () => {
 
 		expect(next).toHaveBeenCalledTimes(1);
 		expect(response.status).toBe(200);
-		expect(response.headers.get(CSP_HEADER)).toBeTruthy();
-		expect(response.headers.get(CSP_HEADER)).toContain("default-src 'self'");
 	});
 
 	it('POST to /api/emails with valid same-origin passes and calls next', async () => {
@@ -63,7 +59,6 @@ describe('middleware onRequest', () => {
 
 		expect(next).toHaveBeenCalledTimes(1);
 		expect(response.status).toBe(200);
-		expect(response.headers.get(CSP_HEADER)).toBeTruthy();
 	});
 
 	it('POST to /api/emails with no Origin header returns 403', async () => {
@@ -133,7 +128,7 @@ describe('middleware onRequest', () => {
 		expect(response.status).toBe(403);
 	});
 
-	it('POST to /api/emails with malformed Origin returns 403, not 500', async () => {
+	it('POST to /api/emails with malformed Origin returns a JSON 403, not 500', async () => {
 		const onRequest = await loadOnRequest();
 		const next = makeNext();
 		const response = await onRequest(
@@ -152,6 +147,8 @@ describe('middleware onRequest', () => {
 
 		expect(next).not.toHaveBeenCalled();
 		expect(response.status).toBe(403);
+		expect(response.headers.get('Content-Type')).toBe('application/json');
+		await expect(response.json()).resolves.toEqual({ error: 'Forbidden' });
 	});
 
 	it('POST to a non-/api/ path skips CSRF check and passes', async () => {
@@ -170,24 +167,5 @@ describe('middleware onRequest', () => {
 
 		expect(next).toHaveBeenCalledTimes(1);
 		expect(response.status).toBe(200);
-	});
-
-	it('always sets the CSP header on successful responses', async () => {
-		const onRequest = await loadOnRequest();
-		const next = makeNext();
-		const response = await onRequest(
-			{
-				url: new URL('http://localhost:4321/about'),
-				request: new Request('http://localhost:4321/about', { method: 'GET' }),
-			},
-			next,
-		);
-
-		const csp = response.headers.get(CSP_HEADER);
-		expect(csp).toBeTruthy();
-		// Spot-check a few directives that should be present.
-		expect(csp).toContain("frame-ancestors 'none'");
-		expect(csp).toContain("object-src 'none'");
-		expect(csp).toContain("base-uri 'self'");
 	});
 });

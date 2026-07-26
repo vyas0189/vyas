@@ -15,16 +15,25 @@ const RESEND_TO_EMAIL = import.meta.env.RESEND_TO_EMAIL || process.env.RESEND_TO
 
 const resend = new Resend(RESEND_API_KEY);
 
+class TimeoutError extends Error {
+	constructor() {
+		super('Resend request timed out');
+		this.name = 'TimeoutError';
+	}
+}
+
 export const POST: APIRoute = async ({ request, clientAddress }) => {
-	// Rate limiting
-	const ip = clientAddress || request.headers.get('x-forwarded-for') || 'unknown';
+	// Rate limiting. Deliberately no x-forwarded-for fallback: that header is
+	// client-controlled, which would let callers mint their own buckets. When
+	// the adapter can't supply an address, everyone shares the 'unknown' bucket.
+	const ip = clientAddress || 'unknown';
 	const limit = await checkRateLimit(ip);
 	if (!limit.success) {
 		return new Response(JSON.stringify({ error: 'Too many requests' }), {
 			status: 429,
 			headers: {
 				'Content-Type': 'application/json',
-				'Retry-After': '60',
+				'Retry-After': String(Math.max(1, Math.ceil((limit.reset - Date.now()) / 1000))),
 			},
 		});
 	}
@@ -77,6 +86,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 
 	const { name, email, message } = validation.data;
 
+	let timeoutId: ReturnType<typeof setTimeout> | undefined;
 	try {
 		const sendPromise = resend.emails.send({
 			from: `Vyas's Website <${RESEND_FROM_EMAIL}>`,
@@ -84,12 +94,12 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 			subject: 'Email from Contact Form',
 			react: React.createElement(ContactEmail, { name, email, message }),
 		});
+		// If the timeout wins the race, the send may still settle later — swallow
+		// that late rejection so it can't surface as an unhandled rejection.
+		sendPromise.catch(() => {});
 
 		const timeoutPromise = new Promise<never>((_, reject) => {
-			const id = setTimeout(() => {
-				clearTimeout(id);
-				reject(new Error('Resend request timed out'));
-			}, 8000);
+			timeoutId = setTimeout(() => reject(new TimeoutError()), 8000);
 		});
 
 		const { error } = (await Promise.race([sendPromise, timeoutPromise])) as Awaited<
@@ -133,6 +143,23 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 			headers: { 'Content-Type': 'application/json' },
 		});
 	} catch (e: unknown) {
+		if (e instanceof TimeoutError) {
+			// The send may still have completed after we stopped waiting — tell the
+			// user honestly rather than implying outright failure.
+			Sentry.captureException(e, {
+				tags: { route: 'emails', resend_status: 504 },
+			});
+			return new Response(
+				JSON.stringify({
+					error: 'The email service timed out. Your message may still have been sent.',
+				}),
+				{
+					status: 504,
+					headers: { 'Content-Type': 'application/json' },
+				},
+			);
+		}
+
 		const err = e as { name?: string; code?: string; statusCode?: number } | undefined;
 		console.error('emails.handler.error', {
 			name: err?.name,
@@ -146,5 +173,14 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 			status: 500,
 			headers: { 'Content-Type': 'application/json' },
 		});
+	} finally {
+		clearTimeout(timeoutId);
 	}
 };
+
+// Any method other than POST (Astro matches specific exports first).
+export const ALL: APIRoute = () =>
+	new Response(JSON.stringify({ error: 'Method not allowed' }), {
+		status: 405,
+		headers: { 'Content-Type': 'application/json', Allow: 'POST' },
+	});

@@ -1,9 +1,8 @@
-import { zodResolver } from '@hookform/resolvers/zod';
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import { Mail, MapPin } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import type { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -16,15 +15,15 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { formSchema } from '@/lib/schemas';
+import { type FormValues, formSchema } from '@/lib/schemas';
 
 const CONTACT_EMAIL = 'vyas0189@gmail.com';
 
 export function ContactForm() {
 	const [statusMessage, setStatusMessage] = useState('');
 
-	const form = useForm<z.infer<typeof formSchema>>({
-		resolver: zodResolver(formSchema),
+	const form = useForm<FormValues>({
+		resolver: standardSchemaResolver(formSchema),
 		mode: 'onSubmit',
 		reValidateMode: 'onChange',
 		defaultValues: {
@@ -34,7 +33,7 @@ export function ContactForm() {
 		},
 	});
 
-	async function onSubmit(values: z.infer<typeof formSchema>) {
+	async function onSubmit(values: FormValues) {
 		try {
 			const response = await fetch('/api/emails', {
 				method: 'POST',
@@ -58,6 +57,22 @@ export function ContactForm() {
 				const msg = 'Too many submissions. Please try again in a minute.';
 				setStatusMessage(msg);
 				toast.error(msg);
+				return;
+			}
+
+			if (response.status === 504) {
+				const msg = `The request timed out — your message may have gone through. If you don't hear back, email ${CONTACT_EMAIL} directly.`;
+				setStatusMessage(msg);
+				toast.error(
+					<>
+						The request timed out — your message may have gone through. If you don't hear back,
+						email{' '}
+						<a href={`mailto:${CONTACT_EMAIL}`} className="underline">
+							{CONTACT_EMAIL}
+						</a>{' '}
+						directly.
+					</>,
+				);
 				return;
 			}
 
