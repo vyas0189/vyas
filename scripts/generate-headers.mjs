@@ -18,8 +18,10 @@ import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-// End tags may legally contain whitespace before '>' (e.g. `</script >`).
-const SCRIPT_RE = /<script([^>]*)>([\s\S]*?)<\/script\s*>/gi;
+// Browser tokenizers close a script element at `</script` followed by any
+// characters up to '>', including whitespace and stray attributes
+// (`</script >`, `</script bar>`), so match the same way.
+const SCRIPT_RE = /<script([^>]*)>([\s\S]*?)<\/script\b[^>]*>/gi;
 const EXECUTABLE_TYPES = new Set(['', 'module', 'text/javascript', 'application/javascript']);
 
 /** Collect sha256 CSP hashes for every executable inline script in an HTML string. */

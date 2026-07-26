@@ -38,9 +38,12 @@ describe('extractInlineScriptHashes', () => {
 		expect(extractInlineScriptHashes(html).size).toBe(1);
 	});
 
-	it('matches end tags containing whitespace, per the HTML spec', () => {
-		const html = '<script>a()</script ><script type="module">b()</script\n>';
-		expect(extractInlineScriptHashes(html)).toEqual(new Set([sha256('a()'), sha256('b()')]));
+	it('matches end tags with whitespace or stray attributes, like browser tokenizers', () => {
+		const html =
+			'<script>a()</script ><script type="module">b()</script\n>' + '<script>c()</script\t\n bar>';
+		expect(extractInlineScriptHashes(html)).toEqual(
+			new Set([sha256('a()'), sha256('b()'), sha256('c()')]),
+		);
 	});
 });
 
