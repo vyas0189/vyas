@@ -5,6 +5,9 @@ beforeEach(() => {
 	// Blobs getStore lookup) via re-import.
 	vi.resetModules();
 	vi.unstubAllEnvs();
+	// Without a configured salt the module generates a random per-process one on
+	// each import — pin it so hashed keys stay stable across re-imports.
+	vi.stubEnv('RATE_LIMIT_SALT', 'test-salt');
 });
 
 // --- helpers ---

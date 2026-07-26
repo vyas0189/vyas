@@ -18,7 +18,7 @@
 // race is acceptable (worst case: a couple extra messages slip through per
 // cold start).
 
-import { createHmac, randomInt } from 'node:crypto';
+import { createHmac, randomBytes, randomInt } from 'node:crypto';
 import { getStore, type Store } from '@netlify/blobs';
 
 const RATE_LIMIT = 3;
@@ -35,9 +35,14 @@ const memoryStore = new Map<string, Entry>();
 
 let blobStore: Store | null | undefined;
 
+// HMAC salt for IP hashing. When RATE_LIMIT_SALT is unset (local dev), a
+// random per-process salt is generated instead of using any hardcoded value —
+// hashes then differ across instances, which only costs cross-instance bucket
+// continuity in environments that never set the var. Production sets it.
+const ipSalt = process.env.RATE_LIMIT_SALT || randomBytes(16).toString('hex');
+
 function hashIp(ip: string): string {
-	const salt = process.env.RATE_LIMIT_SALT || 'vyas-rate-limit-v1';
-	return createHmac('sha256', salt).update(ip).digest('hex').slice(0, 32);
+	return createHmac('sha256', ipSalt).update(ip).digest('hex').slice(0, 32);
 }
 
 function getBlobStore(): Store | null {
