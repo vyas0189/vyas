@@ -16,11 +16,6 @@
     Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
-  for = "/fonts/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
   for = "/favicon.svg"
   [headers.values]
     Cache-Control = "public, max-age=604800"
@@ -32,7 +27,9 @@
     X-Robots-Tag = "noindex"
     Cache-Control = "no-store"
 
-# Site-wide security headers (moved here from middleware.ts; CSP stays in middleware)
+# Site-wide security headers. The Content-Security-Policy is NOT here — it is
+# generated post-build into dist/_headers by scripts/generate-headers.mjs,
+# because its inline-script hashes change with every build (Sentry debug IDs).
 [[headers]]
   for = "/*"
   [headers.values]

@@ -10,12 +10,8 @@ export default defineConfig({
 				test: {
 					name: 'node',
 					environment: 'node',
-					include: [
-						'tests/unit/schemas.test.ts',
-						'tests/unit/utils.test.ts',
-						'tests/unit/middleware.test.ts',
-						'tests/unit/rate-limit.test.ts',
-					],
+					// All plain-TS unit tests; .tsx component tests run in the dom project.
+					include: ['tests/unit/**/*.test.ts'],
 				},
 				resolve: { alias: { '@': resolve(__dirname, './src') } },
 			},

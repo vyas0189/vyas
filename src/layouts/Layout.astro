@@ -2,6 +2,9 @@
 import '@fontsource-variable/inter';
 import '@/styles/globals.css';
 import { ClientRouter } from 'astro:transitions';
+// Preload the latin variable font so text doesn't wait for CSS discovery.
+// Same asset the fontsource CSS references, so Vite emits one hashed URL.
+import interWoff2 from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
 
 interface Props {
 	title: string;
@@ -20,6 +23,7 @@ const ogImage = new URL(ogPath, Astro.site ?? Astro.url).toString();
 	<head>
 		<meta charset='utf-8' />
 		<meta name='viewport' content='width=device-width, initial-scale=1' />
+		<link rel='preload' as='font' type='font/woff2' href={interWoff2} crossorigin />
 		<meta name='description' content={description} />
 		<meta name='generator' content={Astro.generator} />
 		<link rel='canonical' href={Astro.url.href} />

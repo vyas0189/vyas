@@ -1,11 +1,12 @@
 # Claude Code Instructions
 
 ## Project: vyas-portfolio
-Personal portfolio site built with Astro 6 (static), React 19 islands, Tailwind v4, deployed to Netlify. Contact form posts to a single SSR API route (`src/pages/api/emails.ts`) that sends mail via Resend. Sentry handles error reporting.
+Personal portfolio site built with Astro 7 (static), React 19 islands, Tailwind v4, deployed to Netlify. Contact form posts to a single SSR API route (`src/pages/api/emails.ts`) that sends mail via Resend. Sentry handles error reporting.
 
 ## Architecture
 - **Rendering**: `output: 'static'` in `astro.config.mjs`. Only `src/pages/api/emails.ts` opts back into SSR via `export const prerender = false;`.
-- **Middleware**: `src/middleware.ts` sets CSP and does CSRF origin check for `/api/*` POSTs. Other security headers live in `netlify.toml`. Middleware runs at the edge (`edgeMiddleware: true`).
+- **Middleware**: `src/middleware.ts` does the CSRF origin check for `/api/*` POSTs. With static output it only runs for on-demand routes — never for CDN-served pages, so page headers cannot live there. `edgeMiddleware` is off (Sentry needs Node built-ins unavailable on the Deno edge runtime).
+- **Security headers**: static headers (HSTS, XFO, nosniff, …) live in `netlify.toml`. The CSP is generated post-build into `dist/_headers` by `scripts/generate-headers.mjs` (runs via the `postbuild` npm script) because its inline-script hashes change every build — Sentry injects a per-build debug-ID snippet. Don't hardcode CSP hashes anywhere.
 - **Forms**: react-hook-form + zod (`src/lib/schemas.ts`). UI primitives are shadcn-style in `src/components/ui/`.
 - **Email**: Resend (`@react-email/components` for the template at `src/components/ui/contact-email.tsx`). The email template is server-only — keep it out of client bundles.
 - **Observability**: Sentry client + server configs at repo root. Source maps uploaded and deleted post-upload.
@@ -20,7 +21,7 @@ Personal portfolio site built with Astro 6 (static), React 19 islands, Tailwind 
 - `npm test` — both unit + e2e
 
 ## Required env vars
-See `.env.example`. Required: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_TO_EMAIL`. Optional: `PUBLIC_SENTRY_DSN`, `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`.
+See `.env.example`. Required: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_TO_EMAIL`. Optional: `PUBLIC_SENTRY_DSN`, `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `RATE_LIMIT_SALT` (salt for hashing IPs in the rate limiter).
 
 ## Deploy
 GitHub Actions (`.github/workflows/deploy.yml`) is the only deploy path. Netlify's git-driven build should be disabled in the Netlify UI to prevent double-deploys. PRs deploy to a Netlify preview; pushes to `main` deploy `--prod`.
