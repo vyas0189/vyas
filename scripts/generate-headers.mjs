@@ -1,5 +1,5 @@
 // Generates dist/_headers with a Content-Security-Policy for every CDN-served
-// page. Runs automatically after `astro build` (see the `postbuild` npm script).
+// page. Runs automatically after `astro build` (see the `postbuild` script).
 //
 // Why post-build: with `output: 'static'`, middleware never runs for
 // CDN-served pages, so a CSP set there only ever reached the one SSR API

@@ -16,7 +16,7 @@
 		"format:check": "biome format .",
 		"test:unit": "vitest run tests/unit",
 		"test:e2e": "playwright test",
-		"test": "npm run test:unit && npm run test:e2e",
+		"test": "bun run test:unit && bun run test:e2e",
 		"size": "size-limit",
 		"size:why": "size-limit --why",
 		"prepare": "lefthook install || true"
