@@ -1,10 +1,9 @@
 [build]
-  command = "npm run build"
+  command = "bun run build"
   publish = "dist"
 
 [build.environment]
   NODE_VERSION = "24"
-  NPM_FLAGS = "--no-audit --no-fund"
 
 [functions]
   node_bundler = "esbuild"

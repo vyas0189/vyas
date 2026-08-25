@@ -7,10 +7,10 @@ Personal portfolio site for Vyas Ramankulangara.
 ## Development
 
 ```bash
-npm install
+bun install
 cp .env.example .env
 # Fill in RESEND_* and SENTRY_* values
-npm run dev
+bun run dev
 ```
 
 Open http://localhost:4321.
@@ -19,13 +19,13 @@ Open http://localhost:4321.
 
 | Command | Purpose |
 | --- | --- |
-| `npm run dev` | Start dev server |
-| `npm run build` | Production build |
-| `npm run preview` | Preview the built site locally |
-| `npm run typecheck` | Run `astro check` |
-| `npm run test:unit` | Vitest unit tests |
-| `npm run test:e2e` | Playwright e2e tests |
-| `npm test` | Unit + e2e |
+| `bun run dev` | Start dev server |
+| `bun run build` | Production build |
+| `bun run preview` | Preview the built site locally |
+| `bun run typecheck` | Run `astro check` |
+| `bun run test:unit` | Vitest unit tests |
+| `bun run test:e2e` | Playwright e2e tests |
+| `bun run test` | Unit + e2e |
 
 ## Deployment
 
@@ -50,7 +50,7 @@ The contact form is rate-limited to **3 submissions per 60s per IP**, backed by 
 
 ## Pre-commit hooks
 
-This repo uses [lefthook](https://github.com/evilmartians/lefthook) to run Biome's lint+format on staged files before each commit. The hook installs automatically on `npm install` (via the `prepare` script). To run it manually: `npx lefthook run pre-commit`.
+This repo uses [lefthook](https://github.com/evilmartians/lefthook) to run Biome's lint+format on staged files before each commit. The hook installs automatically on `bun install` (via the `prepare` script). To run it manually: `bunx lefthook run pre-commit`.
 
 ## License
 

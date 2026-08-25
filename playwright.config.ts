@@ -38,7 +38,7 @@ export default defineConfig({
 	webServer: process.env.PLAYWRIGHT_TEST_BASE_URL
 		? undefined
 		: {
-				command: 'npm run dev',
+				command: 'bun run dev',
 				url: 'http://localhost:4321',
 				reuseExistingServer: !process.env.CI,
 				// Astro 7 auto-backgrounds `astro dev` when it detects an AI coding
