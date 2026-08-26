@@ -38,7 +38,9 @@ export default defineConfig({
 	webServer: process.env.PLAYWRIGHT_TEST_BASE_URL
 		? undefined
 		: {
-				command: 'bun run dev',
+				// clean-dev-headers must run before the dev server boots; see the
+				// comment in that script for why.
+				command: 'node scripts/clean-dev-headers.mjs && bun run dev',
 				url: 'http://localhost:4321',
 				reuseExistingServer: !process.env.CI,
 				// ASTRO_DEV_BACKGROUND: Astro 7 auto-backgrounds `astro dev` when it
