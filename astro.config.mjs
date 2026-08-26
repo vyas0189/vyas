@@ -11,6 +11,13 @@ import { defineConfig } from 'astro/config';
 export default defineConfig({
 	site: 'https://vyasr.space',
 	output: 'static',
+	devToolbar: {
+		// Off under Playwright: the toolbar's own modules race Vite's on-demand
+		// dep optimization (surfacing as console errors) and it injects <h1>
+		// elements that collide with page-level heading locators. It is dev-only
+		// and never part of the site under test.
+		enabled: !process.env.ASTRO_DISABLE_DEV_TOOLBAR,
+	},
 	prefetch: {
 		// Four tiny pages — prefetch every in-viewport link for instant navigation.
 		prefetchAll: true,

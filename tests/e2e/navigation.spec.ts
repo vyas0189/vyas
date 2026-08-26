@@ -26,7 +26,7 @@ test.describe('Navigation', () => {
 		await aboutLink.click();
 
 		await expect(page).toHaveURL(/\/about/);
-		await expect(page.locator('h1')).toBeVisible();
+		await expect(page.locator('h1').first()).toBeVisible();
 	});
 
 	test('should navigate to Contact page', async ({ page }) => {

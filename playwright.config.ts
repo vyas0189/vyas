@@ -41,9 +41,10 @@ export default defineConfig({
 				command: 'bun run dev',
 				url: 'http://localhost:4321',
 				reuseExistingServer: !process.env.CI,
-				// Astro 7 auto-backgrounds `astro dev` when it detects an AI coding
-				// agent, which detaches it from this process and breaks webServer's
-				// startup detection.
-				env: { ASTRO_DEV_BACKGROUND: '0' },
+				// ASTRO_DEV_BACKGROUND: Astro 7 auto-backgrounds `astro dev` when it
+				// detects an AI coding agent, which detaches it from this process and
+				// breaks webServer's startup detection.
+				// ASTRO_DISABLE_DEV_TOOLBAR: see the `devToolbar` note in astro.config.mjs.
+				env: { ASTRO_DEV_BACKGROUND: '0', ASTRO_DISABLE_DEV_TOOLBAR: '1' },
 			},
 });
