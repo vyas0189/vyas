@@ -13,7 +13,14 @@ const RESEND_API_KEY = import.meta.env.RESEND_API_KEY || process.env.RESEND_API_
 const RESEND_FROM_EMAIL = import.meta.env.RESEND_FROM_EMAIL || process.env.RESEND_FROM_EMAIL;
 const RESEND_TO_EMAIL = import.meta.env.RESEND_TO_EMAIL || process.env.RESEND_TO_EMAIL;
 
-const resend = new Resend(RESEND_API_KEY);
+// Created on first use, after the env check below: the SDK throws at
+// construction when the key is missing, which would crash the function on
+// import instead of returning the handled 500 and reporting it to Sentry.
+let resend: Resend | undefined;
+const getResend = () => {
+	resend ??= new Resend(RESEND_API_KEY);
+	return resend;
+};
 
 class TimeoutError extends Error {
 	constructor() {
@@ -88,9 +95,11 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 
 	let timeoutId: ReturnType<typeof setTimeout> | undefined;
 	try {
-		const sendPromise = resend.emails.send({
+		const sendPromise = getResend().emails.send({
 			from: `Vyas's Website <${RESEND_FROM_EMAIL}>`,
 			to: [RESEND_TO_EMAIL],
+			// Hitting Reply answers the visitor, not the site's own sending address.
+			replyTo: email,
 			subject: 'Email from Contact Form',
 			react: React.createElement(ContactEmail, { name, email, message }),
 		});

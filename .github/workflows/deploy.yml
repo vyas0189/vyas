@@ -14,6 +14,9 @@ concurrency:
 
 env:
   BUN_VERSION: "1.4.5"
+  # Exact versions so a new upstream release can't change what runs with the
+  # Netlify token. Renovate bumps these like any other pin.
+  NETLIFY_CLI_VERSION: "27.20.1"
 
 jobs:
   build-and-test:
@@ -23,10 +26,9 @@ jobs:
       contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
-
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: ${{ env.BUN_VERSION }}
 
@@ -38,7 +40,7 @@ jobs:
 
       - name: Dependency review
         if: github.event_name == 'pull_request'
-        uses: actions/dependency-review-action@v5
+        uses: actions/dependency-review-action@bbc44d14a204704ccc493733616cd1e93a0321ec # v5.0.1
         with:
           fail-on-severity: high
 
@@ -60,14 +62,27 @@ jobs:
           PUBLIC_SENTRY_DSN: ${{ secrets.PUBLIC_SENTRY_DSN }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           PUBLIC_COMMIT_REF: ${{ github.sha }}
-          PUBLIC_DEPLOY_CONTEXT: production
+          # PR builds deploy to a Netlify preview, so tag their Sentry events
+          # and keep the preview out of search results.
+          PUBLIC_DEPLOY_CONTEXT: ${{ github.event_name == 'pull_request' && 'deploy-preview' || 'production' }}
+          NOINDEX: ${{ github.event_name == 'pull_request' && '1' || '' }}
+
+      # Sentry deletes source maps after upload; fail rather than publish any
+      # it missed.
+      - name: Verify no source maps in build
+        run: |
+          if find dist -name '*.map' | grep -q .; then
+            echo "::error::Source maps found in dist/"
+            find dist -name '*.map'
+            exit 1
+          fi
 
       - name: Bundle size check
         run: bun run size
 
       - name: Upload build artifacts
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: netlify-build
           path: |
@@ -85,10 +100,9 @@ jobs:
       deploy_url: ${{ steps.netlify-deploy.outputs.deploy_url }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
-
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: ${{ env.BUN_VERSION }}
 
@@ -96,7 +110,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: netlify-build
 
@@ -108,18 +122,22 @@ jobs:
           ls -la dist/ || echo "No dist folder"
 
       - name: Install Netlify CLI
-        run: bun install -g netlify-cli
+        run: bun install -g "netlify-cli@${NETLIFY_CLI_VERSION}"
 
       - name: Deploy to Netlify
         id: netlify-deploy
+        # Branch names are attacker-chosen text: pass them (and the secrets)
+        # through env so they're never pasted into the script itself. The CLI
+        # reads NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID from the environment.
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         run: |
-          BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
           prod_flag=""
           if [ "$BRANCH_NAME" = "main" ]; then prod_flag="--prod"; fi
 
           netlify deploy \
-            --site ${{ secrets.NETLIFY_SITE_ID }} \
-            --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} \
             $prod_flag \
             --json \
             > deploy_output.json
@@ -139,10 +157,9 @@ jobs:
       contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
-
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: ${{ env.BUN_VERSION }}
 
@@ -150,7 +167,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
           key: pw-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
@@ -160,8 +177,9 @@ jobs:
         run: bunx playwright install --with-deps chromium
 
       - name: Wait for deploy to be live
+        env:
+          URL: ${{ needs.deploy.outputs.deploy_url }}
         run: |
-          URL="${{ needs.deploy.outputs.deploy_url }}"
           for i in {1..30}; do
             if curl -fsS --max-time 5 "$URL" >/dev/null; then
               echo "Deploy is live at $URL"
@@ -181,7 +199,7 @@ jobs:
 
       - name: Upload Playwright report
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: playwright-report
           path: playwright-report/
@@ -198,7 +216,7 @@ jobs:
     steps:
       - name: Sticky PR comment
         if: github.event_name == 'pull_request'
-        uses: marocchino/sticky-pull-request-comment@v3
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
         with:
           header: deploy-status
           message: |
@@ -215,15 +233,18 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v7
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: ${{ env.BUN_VERSION }}
       - name: Install
         run: bun install --frozen-lockfile
+      # Uses the @lhci/cli pinned in bun.lock rather than whatever is newest.
       - name: Run Lighthouse CI
+        env:
+          URL: ${{ needs.deploy.outputs.deploy_url }}
         run: |
-          bunx @lhci/cli@latest autorun \
-            --collect.url=${{ needs.deploy.outputs.deploy_url }} \
-            --collect.url=${{ needs.deploy.outputs.deploy_url }}/about \
-            --collect.url=${{ needs.deploy.outputs.deploy_url }}/contact
+          bunx lhci autorun \
+            --collect.url="$URL" \
+            --collect.url="$URL/about" \
+            --collect.url="$URL/contact"

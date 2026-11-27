@@ -66,8 +66,17 @@ function findHtmlFiles(dir) {
 	return files;
 }
 
+/** Build the `_headers` file body. `noindex` adds X-Robots-Tag for preview builds. */
+export function buildHeadersFile(scriptHashes, { noindex = false } = {}) {
+	const lines = ['/*', `  Content-Security-Policy: ${buildCsp(scriptHashes)}`];
+	// netlify.toml can't set headers per deploy context, so preview builds
+	// (NOINDEX=1, set by CI on pull requests) add this here instead.
+	if (noindex) lines.push('  X-Robots-Tag: noindex, nofollow');
+	return `${lines.join('\n')}\n`;
+}
+
 /** Scan a build output directory and write its `_headers` file. Returns a summary. */
-export function generateHeaders(distDir) {
+export function generateHeaders(distDir, { noindex = false } = {}) {
 	const htmlFiles = findHtmlFiles(distDir);
 	if (htmlFiles.length === 0) {
 		throw new Error(`No HTML files found under ${distDir} — did the build run?`);
@@ -80,18 +89,19 @@ export function generateHeaders(distDir) {
 		}
 	}
 
-	const headersFile = `/*\n  Content-Security-Policy: ${buildCsp(hashes)}\n`;
-	writeFileSync(join(distDir, '_headers'), headersFile);
-	return { htmlFiles: htmlFiles.length, scriptHashes: hashes.size };
+	writeFileSync(join(distDir, '_headers'), buildHeadersFile(hashes, { noindex }));
+	return { htmlFiles: htmlFiles.length, scriptHashes: hashes.size, noindex };
 }
 
 const isMain = process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url;
 if (isMain) {
 	try {
 		const distDir = fileURLToPath(new URL('../dist', import.meta.url));
-		const { htmlFiles, scriptHashes } = generateHeaders(distDir);
+		const { htmlFiles, scriptHashes, noindex } = generateHeaders(distDir, {
+			noindex: process.env.NOINDEX === '1',
+		});
 		console.log(
-			`generate-headers: wrote dist/_headers (CSP with ${scriptHashes} inline script hash(es) from ${htmlFiles} HTML file(s))`,
+			`generate-headers: wrote dist/_headers (CSP with ${scriptHashes} inline script hash(es) from ${htmlFiles} HTML file(s)${noindex ? ', noindex' : ''})`,
 		);
 	} catch (err) {
 		console.error(`generate-headers: ${err instanceof Error ? err.message : err}`);

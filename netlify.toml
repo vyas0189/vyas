@@ -19,13 +19,6 @@
   [headers.values]
     Cache-Control = "public, max-age=604800"
 
-# Block source maps from public access (defense in depth — they should also be deleted post-upload by Sentry)
-[[headers]]
-  for = "/_astro/*.map"
-  [headers.values]
-    X-Robots-Tag = "noindex"
-    Cache-Control = "no-store"
-
 # Site-wide security headers. The Content-Security-Policy is NOT here — it is
 # generated post-build into dist/_headers by scripts/generate-headers.mjs,
 # because its inline-script hashes change with every build (Sentry debug IDs).
@@ -38,8 +31,8 @@
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
 
-# Block indexing of preview deploys
-[[context.deploy-preview.headers]]
-  for = "/*"
-  [context.deploy-preview.headers.values]
-    X-Robots-Tag = "noindex, nofollow"
+# Source maps: Sentry deletes them after upload, and CI fails the build if any
+# remain in dist/, so none are ever published.
+#
+# Preview noindex: netlify.toml headers can't vary by deploy context, so
+# scripts/generate-headers.mjs adds X-Robots-Tag to dist/_headers on PR builds.

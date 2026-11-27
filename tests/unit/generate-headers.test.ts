@@ -73,12 +73,25 @@ describe('generateHeaders', () => {
 		writeFileSync(join(dir, 'about', 'index.html'), '<script>b()</script>');
 
 		const result = generateHeaders(dir);
-		expect(result).toEqual({ htmlFiles: 2, scriptHashes: 2 });
+		expect(result).toEqual({ htmlFiles: 2, scriptHashes: 2, noindex: false });
 
 		const headers = readFileSync(join(dir, '_headers'), 'utf8');
 		expect(headers.startsWith('/*\n  Content-Security-Policy: ')).toBe(true);
 		expect(headers).toContain(sha256('a()'));
 		expect(headers).toContain(sha256('b()'));
+		expect(headers).not.toContain('X-Robots-Tag');
+	});
+
+	it('adds X-Robots-Tag for preview builds', () => {
+		dir = mkdtempSync(join(tmpdir(), 'gen-headers-'));
+		writeFileSync(join(dir, 'index.html'), '<p>hi</p>');
+
+		generateHeaders(dir, { noindex: true });
+
+		const headers = readFileSync(join(dir, '_headers'), 'utf8');
+		expect(headers).toMatch(
+			/^\/\*\n {2}Content-Security-Policy: .+\n {2}X-Robots-Tag: noindex, nofollow\n$/,
+		);
 	});
 
 	it('throws when the build output has no HTML', () => {

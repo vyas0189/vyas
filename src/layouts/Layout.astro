@@ -62,21 +62,24 @@ const ogImage = new URL(ogPath, Astro.site ?? Astro.url).toString();
 			"sameAs": ["https://github.com/vyas0189", "https://www.linkedin.com/in/vyas0189/"]
 		})} />
 
-		<!-- Dark mode script - runs before page render -->
+		<!-- Dark mode script: runs before first paint, and again after every
+		     view-transition swap (which replaces <html>'s classes) so pages
+		     never flash the wrong theme. No stored choice means follow the OS. -->
 		<script is:inline>
-			const getThemePreference = () => {
-				if (
-					typeof localStorage !== 'undefined' &&
-					localStorage.getItem('theme')
-				) {
-					return localStorage.getItem('theme');
-				}
-				return window.matchMedia('(prefers-color-scheme: dark)').matches
-					? 'dark'
-					: 'light';
-			};
-			const isDark = getThemePreference() === 'dark';
-			document.documentElement.classList[isDark ? 'add' : 'remove']('dark');
+			(() => {
+				const apply = () => {
+					let theme = null;
+					try {
+						theme = localStorage.getItem('theme');
+					} catch {}
+					const dark =
+						theme === 'dark' ||
+						(theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+					document.documentElement.classList.toggle('dark', dark);
+				};
+				apply();
+				document.addEventListener('astro:after-swap', apply);
+			})();
 		</script>
 	</head>
 	<body class='antialiased'>

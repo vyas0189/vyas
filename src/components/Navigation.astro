@@ -5,14 +5,16 @@ const links = [
 	{ href: '/contact', label: 'Contact' },
 ];
 
-const currentPath = Astro.url.pathname;
+// Static builds may render '/about/' for '/about'; compare without the slash.
+const normalize = (path: string) => path.replace(/(.)\/$/, '$1');
+const currentPath = normalize(Astro.url.pathname);
 ---
 
 <header
 	transition:persist
 	class='sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/60'>
 	<div class='container flex h-16 items-center px-4'>
-		<nav class='flex flex-1 items-center space-x-6 text-sm font-medium'>
+		<nav id='site-nav' class='flex flex-1 items-center space-x-6 text-sm font-medium'>
 			{
 				links.map((link) => (
 					<a
@@ -75,10 +77,10 @@ const currentPath = Astro.url.pathname;
 						<path d='M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z'></path>
 					</svg>
 				</button>
-				<div id='theme-menu' class='theme-dropdown' role='menu'>
-					<button data-theme='light' class='theme-option' role='menuitem'>Light</button>
-					<button data-theme='dark' class='theme-option' role='menuitem'>Dark</button>
-					<button data-theme='system' class='theme-option' role='menuitem'>System</button>
+				<div id='theme-menu' class='theme-dropdown' role='menu' aria-label='Theme'>
+					<button type='button' data-theme='light' class='theme-option' role='menuitemradio' aria-checked='false' tabindex='-1'>Light</button>
+					<button type='button' data-theme='dark' class='theme-option' role='menuitemradio' aria-checked='false' tabindex='-1'>Dark</button>
+					<button type='button' data-theme='system' class='theme-option' role='menuitemradio' aria-checked='false' tabindex='-1'>System</button>
 				</div>
 			</div>
 		</div>
@@ -97,7 +99,6 @@ const currentPath = Astro.url.pathname;
 		z-index: 9999;
 		min-width: 8rem;
 		overflow: hidden;
-		rounded: 0.375rem;
 		border: 1px solid hsl(var(--border));
 		background-color: hsl(var(--popover));
 		color: hsl(var(--popover-foreground));
@@ -148,95 +149,159 @@ const currentPath = Astro.url.pathname;
 </style>
 
 <script>
-	// Theme management
-	const getThemePreference = () => {
-		if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
-			return localStorage.getItem('theme');
+	type Theme = 'light' | 'dark' | 'system';
+
+	const THEMES: readonly Theme[] = ['light', 'dark', 'system'];
+	const ACTIVE = ['text-foreground', 'font-semibold'];
+	const INACTIVE = ['text-foreground/60'];
+	const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+	// No stored choice means "follow the OS". Nothing is written until the
+	// visitor picks a theme, so their OS setting keeps applying until then.
+	const getStoredTheme = (): Theme => {
+		try {
+			const stored = localStorage.getItem('theme');
+			if (stored && (THEMES as readonly string[]).includes(stored)) return stored as Theme;
+		} catch {
+			// storage blocked (private mode, sandboxed iframe)
 		}
-		return window.matchMedia('(prefers-color-scheme: dark)').matches
-			? 'dark'
-			: 'light';
+		return 'system';
 	};
 
-	const setTheme = (theme: string) => {
-		const isDark =
-			theme === 'dark' ||
-			(theme === 'system' &&
-				window.matchMedia('(prefers-color-scheme: dark)').matches);
-		document.documentElement.classList[isDark ? 'add' : 'remove']('dark');
-		if (typeof localStorage !== 'undefined') {
-			localStorage.setItem('theme', theme);
+	const applyTheme = (theme: Theme) => {
+		const isDark = theme === 'dark' || (theme === 'system' && darkQuery.matches);
+		document.documentElement.classList.toggle('dark', isDark);
+		for (const option of document.querySelectorAll<HTMLElement>('.theme-option')) {
+			option.setAttribute('aria-checked', String(option.dataset.theme === theme));
 		}
 	};
+
+	const setTheme = (theme: Theme) => {
+		try {
+			if (theme === 'system') localStorage.removeItem('theme');
+			else localStorage.setItem('theme', theme);
+		} catch {
+			// storage blocked; the choice still applies for this page
+		}
+		applyTheme(theme);
+	};
+
+	// The header persists across view transitions, so its server-rendered
+	// active link would otherwise stay on the first page visited.
+	const updateActiveLink = () => {
+		const path = location.pathname.replace(/(.)\/$/, '$1');
+		for (const link of document.querySelectorAll<HTMLAnchorElement>('#site-nav a')) {
+			const active = link.getAttribute('href') === path;
+			if (active) link.setAttribute('aria-current', 'page');
+			else link.removeAttribute('aria-current');
+			link.classList.remove(...(active ? INACTIVE : ACTIVE));
+			link.classList.add(...(active ? ACTIVE : INACTIVE));
+		}
+	};
+
+	function bindThemeMenu(toggleButton: HTMLButtonElement, dropdown: HTMLElement) {
+		const options = () => [...dropdown.querySelectorAll<HTMLButtonElement>('.theme-option')];
+		let isOpen = false;
+
+		const focusOption = (index: number) => {
+			const items = options();
+			items[(index + items.length) % items.length]?.focus();
+		};
+
+		const openDropdown = (focus: 'checked' | 'first' | 'last' = 'checked') => {
+			dropdown.classList.add('open');
+			isOpen = true;
+			toggleButton.setAttribute('aria-expanded', 'true');
+			const items = options();
+			const checked = items.findIndex((o) => o.getAttribute('aria-checked') === 'true');
+			focusOption(focus === 'last' ? -1 : focus === 'first' || checked < 0 ? 0 : checked);
+		};
+
+		const closeDropdown = (refocus = false) => {
+			dropdown.classList.remove('open');
+			isOpen = false;
+			toggleButton.setAttribute('aria-expanded', 'false');
+			if (refocus) toggleButton.focus();
+		};
+
+		toggleButton.addEventListener('click', (e) => {
+			e.stopPropagation();
+			if (isOpen) closeDropdown();
+			else openDropdown();
+		});
+
+		toggleButton.addEventListener('keydown', (e) => {
+			if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+				e.preventDefault();
+				openDropdown(e.key === 'ArrowUp' ? 'last' : 'first');
+			}
+		});
+
+		dropdown.addEventListener('keydown', (e) => {
+			const items = options();
+			const index = items.indexOf(document.activeElement as HTMLButtonElement);
+			switch (e.key) {
+				case 'ArrowDown':
+					e.preventDefault();
+					focusOption(index + 1);
+					break;
+				case 'ArrowUp':
+					e.preventDefault();
+					focusOption(index - 1);
+					break;
+				case 'Home':
+					e.preventDefault();
+					focusOption(0);
+					break;
+				case 'End':
+					e.preventDefault();
+					focusOption(-1);
+					break;
+				case 'Escape':
+					e.preventDefault();
+					closeDropdown(true);
+					break;
+				case 'Tab':
+					closeDropdown();
+					break;
+			}
+		});
+
+		// Close when clicking outside
+		document.addEventListener('click', (e) => {
+			if (isOpen && !dropdown.contains(e.target as Node) && !toggleButton.contains(e.target as Node)) {
+				closeDropdown();
+			}
+		});
+
+		for (const option of options()) {
+			option.addEventListener('click', () => {
+				const theme = option.dataset.theme as Theme | undefined;
+				if (theme && THEMES.includes(theme)) {
+					setTheme(theme);
+					closeDropdown(true);
+				}
+			});
+		}
+
+		// Follow OS changes while on "System"
+		darkQuery.addEventListener('change', () => {
+			if (getStoredTheme() === 'system') applyTheme('system');
+		});
+	}
 
 	function init() {
-		// Initialize theme
-		const currentTheme = getThemePreference();
-		setTheme(currentTheme || 'light');
+		applyTheme(getStoredTheme());
+		updateActiveLink();
 
-		// Dropdown toggle
-		const toggleButton = document.getElementById('theme-toggle');
+		const toggleButton = document.getElementById('theme-toggle') as HTMLButtonElement | null;
 		const dropdown = document.getElementById('theme-menu');
-
 		if (!toggleButton || !dropdown) return;
 
 		// Guard against double-binding when the header persists across transitions
 		if (toggleButton.dataset.bound === 'true') return;
 		toggleButton.dataset.bound = 'true';
-
-		let isOpen = false;
-
-		const openDropdown = () => {
-			dropdown.classList.add('open');
-			isOpen = true;
-			toggleButton.setAttribute('aria-expanded', 'true');
-		};
-
-		const closeDropdown = () => {
-			dropdown.classList.remove('open');
-			isOpen = false;
-			toggleButton.setAttribute('aria-expanded', 'false');
-		};
-
-		toggleButton.addEventListener('click', (e) => {
-			e.stopPropagation();
-			if (isOpen) {
-				closeDropdown();
-			} else {
-				openDropdown();
-			}
-		});
-
-		// Close dropdown when clicking outside
-		document.addEventListener('click', (e) => {
-			if (
-				isOpen &&
-				!dropdown.contains(e.target as Node) &&
-				!toggleButton.contains(e.target as Node)
-			) {
-				closeDropdown();
-			}
-		});
-
-		// Close dropdown on Escape and refocus toggle
-		document.addEventListener('keydown', (e) => {
-			if (e.key === 'Escape' && isOpen) {
-				closeDropdown();
-				(toggleButton as HTMLButtonElement).focus();
-			}
-		});
-
-		// Handle theme selection
-		const themeOptions = document.querySelectorAll('.theme-option');
-		themeOptions.forEach((option) => {
-			option.addEventListener('click', (e) => {
-				const theme = (e.target as HTMLElement).getAttribute('data-theme');
-				if (theme) {
-					setTheme(theme);
-					closeDropdown();
-				}
-			});
-		});
+		bindThemeMenu(toggleButton, dropdown);
 	}
 
 	document.addEventListener('astro:page-load', init);
