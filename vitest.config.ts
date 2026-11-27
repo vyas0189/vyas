@@ -13,7 +13,7 @@ export default defineConfig({
 					// All plain-TS unit tests; .tsx component tests run in the dom project.
 					include: ['tests/unit/**/*.test.ts'],
 				},
-				resolve: { alias: { '@': resolve(__dirname, './src') } },
+				resolve: { alias: { '@': resolve(import.meta.dirname, './src') } },
 			},
 			{
 				// React plugin handles JSX (Vitest 4 / Rolldown does not transform JSX itself).
@@ -24,7 +24,7 @@ export default defineConfig({
 					include: ['tests/unit/contact-form.test.tsx'],
 					setupFiles: ['./tests/setup.ts'],
 				},
-				resolve: { alias: { '@': resolve(__dirname, './src') } },
+				resolve: { alias: { '@': resolve(import.meta.dirname, './src') } },
 			},
 		],
 		coverage: {
