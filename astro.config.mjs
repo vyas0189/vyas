@@ -3,7 +3,7 @@
 import netlify from '@astrojs/netlify';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
-import sentry from '@sentry/astro';
+import sentry from '@sentry/astro/integration';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'astro/config';
 
@@ -34,10 +34,10 @@ export default defineConfig({
 	},
 	integrations: [
 		sentry({
-			sourceMapsUploadOptions: {
-				project: 'vyas-profile',
-				org: 'vyas-3y',
-				authToken: process.env.SENTRY_AUTH_TOKEN,
+			project: 'vyas-profile',
+			org: 'vyas-3y',
+			authToken: process.env.SENTRY_AUTH_TOKEN,
+			sourcemaps: {
 				filesToDeleteAfterUpload: ['./dist/**/*.map'],
 			},
 			// TODO: Once @sentry/astro confirms `release.name` support at the integration root,
