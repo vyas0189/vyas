@@ -12,6 +12,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+# Read-only by default; each job asks for exactly what it needs.
+permissions:
+  contents: read
+
 env:
   BUN_VERSION: "1.4.5"
   # Exact versions so a new upstream release can't change what runs with the
