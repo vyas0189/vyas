@@ -68,6 +68,26 @@ describe('formSchema validation', () => {
 		expect(result.success).toBe(false);
 	});
 
+	it('should reject a message of only whitespace', () => {
+		const result = formSchema.safeParse({
+			name: 'John Doe',
+			email: 'john@example.com',
+			message: '            \n\t   ',
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it('should trim the message', () => {
+		const result = formSchema.safeParse({
+			name: 'John Doe',
+			email: 'john@example.com',
+			message: '  This is a test message with enough characters.  ',
+		});
+		expect(result.success && result.data.message).toBe(
+			'This is a test message with enough characters.',
+		);
+	});
+
 	it('should reject message that is too short', () => {
 		const invalidData = {
 			name: 'John Doe',

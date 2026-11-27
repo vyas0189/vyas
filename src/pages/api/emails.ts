@@ -91,6 +91,8 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 		const sendPromise = resend.emails.send({
 			from: `Vyas's Website <${RESEND_FROM_EMAIL}>`,
 			to: [RESEND_TO_EMAIL],
+			// Hitting Reply answers the visitor, not the site's own sending address.
+			replyTo: email,
 			subject: 'Email from Contact Form',
 			react: React.createElement(ContactEmail, { name, email, message }),
 		});
