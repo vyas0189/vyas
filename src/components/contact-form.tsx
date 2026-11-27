@@ -19,6 +19,11 @@ import { type FormValues, formSchema } from '@/lib/schemas';
 
 const CONTACT_EMAIL = 'vyas0189@gmail.com';
 
+const TIMEOUT_PREFIX =
+	"The request timed out — your message may have gone through. If you don't hear back, email";
+const SERVICE_DOWN_PREFIX = 'Email service is having issues. Please email';
+const GENERIC_PREFIX = 'Something went wrong. Please email';
+
 export function ContactForm() {
 	const [statusMessage, setStatusMessage] = useState('');
 
@@ -33,6 +38,20 @@ export function ContactForm() {
 		},
 	});
 
+	// Announce to screen readers and show a toast with a mailto link.
+	function reportError(prefix: string) {
+		setStatusMessage(`${prefix} ${CONTACT_EMAIL} directly.`);
+		toast.error(
+			<>
+				{prefix}{' '}
+				<a href={`mailto:${CONTACT_EMAIL}`} className="underline">
+					{CONTACT_EMAIL}
+				</a>{' '}
+				directly.
+			</>,
+		);
+	}
+
 	async function onSubmit(values: FormValues) {
 		try {
 			const response = await fetch('/api/emails', {
@@ -45,8 +64,7 @@ export function ContactForm() {
 
 			if (response.ok) {
 				form.reset();
-				const success = 'Message sent. Thank you for your message.';
-				setStatusMessage(success);
+				setStatusMessage('Message sent. Thank you for your message.');
 				toast.success('Message sent', {
 					description: 'Thank you for your message.',
 				});
@@ -60,60 +78,11 @@ export function ContactForm() {
 				return;
 			}
 
-			if (response.status === 504) {
-				const msg = `The request timed out — your message may have gone through. If you don't hear back, email ${CONTACT_EMAIL} directly.`;
-				setStatusMessage(msg);
-				toast.error(
-					<>
-						The request timed out — your message may have gone through. If you don't hear back,
-						email{' '}
-						<a href={`mailto:${CONTACT_EMAIL}`} className="underline">
-							{CONTACT_EMAIL}
-						</a>{' '}
-						directly.
-					</>,
-				);
-				return;
-			}
-
-			const mailtoFallback = (
-				<>
-					Email service is having issues. Please email{' '}
-					<a href={`mailto:${CONTACT_EMAIL}`} className="underline">
-						{CONTACT_EMAIL}
-					</a>{' '}
-					directly.
-				</>
-			);
-
-			if (response.status >= 500) {
-				setStatusMessage(`Email service is having issues. Please email ${CONTACT_EMAIL} directly.`);
-				toast.error(mailtoFallback);
-				return;
-			}
-
-			setStatusMessage(`Something went wrong. Please email ${CONTACT_EMAIL} directly.`);
-			toast.error(
-				<>
-					Something went wrong. Please email{' '}
-					<a href={`mailto:${CONTACT_EMAIL}`} className="underline">
-						{CONTACT_EMAIL}
-					</a>{' '}
-					directly.
-				</>,
-			);
+			if (response.status === 504) reportError(TIMEOUT_PREFIX);
+			else if (response.status >= 500) reportError(SERVICE_DOWN_PREFIX);
+			else reportError(GENERIC_PREFIX);
 		} catch {
-			const msg = `Something went wrong. Please email ${CONTACT_EMAIL} directly.`;
-			setStatusMessage(msg);
-			toast.error(
-				<>
-					Something went wrong. Please email{' '}
-					<a href={`mailto:${CONTACT_EMAIL}`} className="underline">
-						{CONTACT_EMAIL}
-					</a>{' '}
-					directly.
-				</>,
-			);
+			reportError(GENERIC_PREFIX);
 		}
 	}
 
