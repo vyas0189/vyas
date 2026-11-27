@@ -8,6 +8,10 @@ const captureMessage = vi.fn();
 vi.mock('resend', () => ({
 	Resend: class {
 		emails = { send };
+		// Mirror the real SDK, which throws when constructed without a key.
+		constructor(key?: string) {
+			if (!key) throw new Error('Missing API key');
+		}
 	},
 }));
 vi.mock('@/lib/rate-limit', () => ({ checkRateLimit }));
@@ -101,7 +105,7 @@ describe('POST /api/emails', () => {
 	});
 
 	it('returns 500 and reports to Sentry when env vars are missing', async () => {
-		const { POST } = await load({ ...ENV, RESEND_TO_EMAIL: '' });
+		const { POST } = await load({ ...ENV, RESEND_API_KEY: '', RESEND_TO_EMAIL: '' });
 		const res = await POST({ request: post(valid) });
 		expect(res.status).toBe(500);
 		expect(captureMessage).toHaveBeenCalled();
